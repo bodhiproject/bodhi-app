@@ -4,76 +4,104 @@ const resolvers = require('./resolvers');
 // Define your types here.
 const typeDefs = `
 type Topic {
-  id: ID!
-  topicAddress: String!
+  address: String!
   creatorAddress: String!
+  status: _OracleStatusType!
   name: String!
   options: [String!]!
   resultIdx: Int
-  block: Int!
+  qtumAmount: [Int]
+  botAmount: [Int]
+  blockNum: Int!
   oracles: [Oracle]!
 }
 
 type Oracle {
-  id: ID!
-  type: String!
-  topicAddress: String!
+  address: String!
   creatorAddress: String!
-  oracleAddress: String!
+  topicAddress: String!
+  status: _OracleStatusType!
+  token: String!
+  name: String!
+  options: [String!]!
   optionIdxs: [String!]!
-  votes: [Vote]!
+  amounts: [Int]
   resultIdx: Int
-  block: Int!
-  endBlock: Int
-  arbitrationOptionEndBlock: Int!
+  blockNum: Int!
+  endBlock: Int!
 }
 
 type Vote {
-  id: ID!
+  address: String!
   voterAddress: String!
   oracleAddress: String!
-  voteForIdx: Int!
+  optionIdx: Int!
   amount: Int!
-  block: Int!
+  blockNum: Int!
 }
 
 type Query {
-  allTopics(filter: TopicFilter, skip: Int, first: Int): [Topic]!
-  allOracles: [Oracle]!
-  allVotes: [Vote]!
+  allTopics(filter: TopicFilter, skip: Int, first: Int, orderBy:String): [Topic]!
+  allOracles(filter: OracleFilter, skip: Int, first: Int, orderBy:String): [Oracle]!
+  searchOracles(filter: SearchOracleFilter, order:String): [Oracle]!
+  allVotes(filter: VoteFilter, skip: Int, first: Int, orderBy:String): [Vote]!
 }
 
 input TopicFilter {
   OR: [TopicFilter!]
-  topicAddress_contains: String
+  address: String
+  status: _OracleStatusType
+}
+
+input OracleFilter {
+  OR: [OracleFilter!]
+  address: String
+  topicAddress: String
+  status: _OracleStatusType
+}
+
+input SearchOracleFilter {
+  OR: [SearchOracleFilter!]
+  address_contains: String
   name_contains: String
+}
+
+input VoteFilter {
+  OR: [VoteFilter!]
+  address: String
+  oracleAddress: String
+  voterAddress: String
+  optionIdx: Int
 }
 
 type Mutation {
   createTopic(
-    topicAddress: String!
+    address: String!
     creatorAddress: String!
     name: String!
     options: [String!]!
+    blockNum: Int
   ): Topic
 
   createOracle(
-    type: String!
+    address: String!
     topicAddress: String!
     creatorAddress: String!
-    oracleAddress: String!
+    token: _TokenType!
+    name: String!
+    options: [String!]!
     optionIdxs: [Int!]!
-    block: Int!
-    endBlock: Int
-    arbitrationOptionEndBlock: Int
+    blockNum: Int!
+    endBlock: Int!
   ): Oracle
 
   createVote(
+    address: String!
     voterAddress: String!
     oracleAddress: String!
-    voteForIdx: Int!
+    optionIdx: Int!
     amount: Int!
-    block: Int!
+    blockNum: Int!
   ): Vote
 }
 
@@ -96,6 +124,17 @@ enum _ModelMutationType {
   DELETED
 }
 
+enum _OracleStatusType {
+  CREATED
+  VOTING
+  WAITRESULT
+  WITHDRAW
+}
+
+enum _TokenType {
+  QTUM
+  BOT
+}
 `;
 
 // Generate the schema object from your types definition.
