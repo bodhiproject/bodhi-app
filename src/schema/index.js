@@ -24,7 +24,7 @@ type Oracle {
   token: String!
   name: String!
   options: [String!]!
-  optionIdxs: [String!]!
+  optionIdxs: [Int!]!
   amounts: [Int]
   resultIdx: Int
   blockNum: Int!
@@ -43,7 +43,7 @@ type Vote {
 type Query {
   allTopics(filter: TopicFilter, skip: Int, first: Int, orderBy:String): [Topic]!
   allOracles(filter: OracleFilter, skip: Int, first: Int, orderBy:String): [Oracle]!
-  searchOracles(filter: SearchOracleFilter, order:String): [Oracle]!
+  searchOracles(searchPhrase: String, skip: Int, first: Int, orderBy:String): [Oracle]!
   allVotes(filter: VoteFilter, skip: Int, first: Int, orderBy:String): [Vote]!
 }
 
@@ -58,12 +58,6 @@ input OracleFilter {
   address: String
   topicAddress: String
   status: _OracleStatusType
-}
-
-input SearchOracleFilter {
-  OR: [SearchOracleFilter!]
-  address_contains: String
-  name_contains: String
 }
 
 input VoteFilter {
@@ -128,6 +122,7 @@ enum _OracleStatusType {
   CREATED
   VOTING
   WAITRESULT
+  PENDING
   WITHDRAW
 }
 

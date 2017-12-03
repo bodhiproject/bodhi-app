@@ -1,13 +1,14 @@
 const pubsub = require('../pubsub');
 
+
 function buildTopicFilters({OR = [], address, status}) {
   const filter = (address || status) ? {} : null;
   if (address) {
-    filter.address = {$eq: `${address}`}
+    filter.address = {$eq: `${address}`};
   }
 
   if (status) {
-    filter.status = {$eq: `${status}`}
+    filter.status = {$eq: `${status}`};
   }
 
   let filters = filter ? [filter] : [];
@@ -17,71 +18,122 @@ function buildTopicFilters({OR = [], address, status}) {
   return filters;
 }
 
-function buildSearchOracleFilters({OR = [], topicAddress_contains, name_contains}) {
-  const filter = (topicAddress_contains || name_contains) ? {} : null;
-  if (topicAddress_contains) {
-    filter.topicAddress = {$regex: `.*${topicAddress_contains}.*`};
-  }
-  if (name_contains) {
-    filter.name = {$regex: `.*${name_contains}.*`};
+function buildOracleFilters({OR = [], address, topicAddress, status}) {
+  const filter = (address || topicAddress || status) ? {}: null;
+  if (address) {
+    filter.address = {$eq: `${address}`};
   }
 
-  let filters = filter ? [filter] : [];
+  if (topicAddress) {
+    filter.topicAddress = {$eq: `${topicAddress}`};
+  }
+
+  if (status) {
+    filter.status = {$eq: `${status}`};
+  }
+
+  let filters = filter ? [filter]:[]
   for (let i = 0; i < OR.length; i++) {
-    filters = filters.concat(buildSearchOracleFilter(OR[i]));
+    filters = filters.concat(buildOracleFilters(OR[i]));
   }
   return filters;
 }
 
-// input TopicFilter {
-//   OR: [TopicFilter!]
-//   address: String
-//   status: _OracleStatusType
-// }
+function buildSearchOracleFilter(searchPhrase) {
+  const filterFields = ["name", "address", "creatorAddress", "topicAddress"];
+  if (!searchPhrase) {
+    return [];
+  }
 
-// input OracleFilter {
-//   OR: [OracleFilter!]
-//   address: String
-//   topicAddress: String
-//   status: _OracleStatusType
-// }
+  filters = [];
+  for (let i=0; i < filterFields.length; i++){
+    const filter = {};
+    filter[filterFields[i]] = {$regex: `.*${searchPhrase}.*`};
+    filters.push(filter)
+  }
 
-// input SearchOracleFilter {
-//   OR: [SearchOracleFilter!]
-//   address_contains: String
-//   name_contains: String
-// }
+  return filters;
+}
 
-// input VoteFilter {
-//   OR: [VoteFilter!]
-//   address: String
-//   oracleAddress: String
-//   voterAddress: String
-//   optionIdx: Int
-// }
+function buildVoteFilters({OR = [], address, oracleAddress, voterAddress, optionIdx}) {
+  const filter = (address || oracleAddress || voterAddress || optionIdx) ? {} : null;
+  if (address) {
+    filter.address = {$eq: `${address}`};
+  }
+
+  if (oracleAddress) {
+    filter.oracleAddress = {$eq: `${oracleAddress}`};
+  }
+
+  if (voterAddress) {
+    filter.voterAddress = {$eq: `${voterAddress}`};
+  }
+
+  if (optionIdx) {
+    filter.optionIdx = {$eq: `${optionIdx}`};
+  }
+
+  let filters = filter ? [filter]: [];
+  for (let i = 0; i < OR.length; i++) {
+    filters = filters.concat(buildVoteFilters(OR[i]));
+  }
+  return filters;
+}
+
 
 module.exports = {
   Query: {
     allTopics: async (root, {filter, first, skip, orderBy}, {mongo: {Topics}}) => {
-      let query = filter ? {$or: buildTopicFilters(filter)}: {}
-      const cursor = Topics.find(query)
+      let query = filter ? {$or: buildTopicFilters(filter)}: {};
+      const cursor = Topics.find(query);
       if (first) {
-        cursor.limit(first)
+        cursor.limit(first);
       }
 
       if (skip) {
-        cursor.skip(skip)
+        cursor.skip(skip);
       }
 
       return await cursor.toArray();
     },
 
     allOracles: async (root, {filter, first, skip, orderBy}, {mongo: {Oracles}}) => {
-      return await Oracles.find({}).toArray();
+      let query = filter ? {$or: buildOracleFilters(filter)}: {};
+      const cursor = Oracles.find(query);
+      if (first) {
+        cursor.limit(first);
+      }
+
+      if (skip) {
+        cursor.skip(skip);
+      }
+      return await cursor.toArray();
+    },
+
+    searchOracles: async (root, {searchPhrase, first, skip, orderBy}, {mongo: {Oracles}}) => {
+      let query = searchPhrase ? {$or: buildSearchOracleFilter(searchPhrase)}: {};
+      const cursor = Oracles.find(query);
+      if (first) {
+        cursor.limit(first);
+      }
+
+      if (skip) {
+        cursor.skip(skip);
+      }
+      return await cursor.toArray();
     },
 
     allVotes: async (root, {filter, first, skip, orderBy}, {mongo: {Votes}}) => {
-      return await Votes.find({}).toArray();
+      let query = filter ? {$or: buildVoteFilters(filter)}: {};
+      const cursor = Votes.find(query);
+      if (first) {
+        cursor.limit(first);
+      }
+
+      if (skip) {
+        cursor.skip(skip);
+      }
+      return await cursor.toArray();
     }
   },
 
@@ -99,8 +151,13 @@ module.exports = {
     },
 
     createOracle: async (root, data, {mongo: {Oracles}}) => {
+      data.status = 'CREATED';
+      data.amounts = Array(data.options.length).fill(0);
+
       const response = await Oracles.insert(data);
-      return Object.assign({id: response.insertedIds[0]}, data);
+      const newOracle = Object.assign({id: response.insertedIds[0]}, data);
+
+      return newOracle;
     },
 
     createVote: async (root, data, {mongo: {Votes}}) => {
