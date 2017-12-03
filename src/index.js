@@ -1,4 +1,5 @@
 const express = require('express');
+const cors = require('cors')
 
 // This package automatically parses JSON requests.
 const bodyParser = require('body-parser');
@@ -21,6 +22,7 @@ const start = async () => {
   var app = express();
 
   const PORT = 5555;
+  app.use(cors());
 
   app.use('/graphql', bodyParser.json(), graphqlExpress({
     context: {
