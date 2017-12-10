@@ -167,8 +167,8 @@ module.exports = {
   },
 
   Topic: {
-    oracles: async ({topicAddress}, data, {mongo: {Oracles}}) => {
-      return await Oracles.find({topicAddress: topicAddress}).toArray();
+    oracles: async ({address}, data, {mongo: {Oracles}}) => {
+      return await Oracles.find({topicAddress: address}).toArray();
     }
   },
 
