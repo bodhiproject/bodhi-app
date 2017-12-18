@@ -17,5 +17,6 @@ module.exports = async () => {
     Topics: db.collection('topics'),
     Oracles: db.collection('oracles'),
     Votes:  db.collection('votes'),
+    Blocks: db.collection('blocks'),
   };
 }

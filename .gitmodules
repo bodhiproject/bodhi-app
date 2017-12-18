@@ -1,0 +1,3 @@
+[submodule "src/qweb3.js"]
+	path = src/qweb3.js
+	url = https://github.com/bodhiproject/qweb3.js.git

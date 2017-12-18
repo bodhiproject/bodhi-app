@@ -11,12 +11,13 @@ const {graphqlExpress, graphiqlExpress} = require('apollo-server-express');
 const schema = require('./schema');
 
 const connectDB = require('./db');
+const startSync = require('./sync')
 
 const {execute, subscribe} = require('graphql');
 const {createServer} = require('http');
 const {SubscriptionServer} = require('subscriptions-transport-ws');
 
-const start = async () => {
+const startAPI = async () => {
 
   const mongo = await connectDB()
   var app = express();
@@ -42,8 +43,9 @@ const start = async () => {
       {execute, subscribe, schema},
       {server, path: '/subscriptions'},
     );
-    console.log(`Bodhi API GraphQL server running on port ${PORT}.`)
+    console.log(`Bodhi API GraphQL server running on http://localhost:${PORT}.`)
   });
 };
 
-start();
+startSync();
+startAPI();

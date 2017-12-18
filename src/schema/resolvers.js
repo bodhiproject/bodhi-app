@@ -80,6 +80,23 @@ function buildVoteFilters({OR = [], address, oracleAddress, voterAddress, option
   return filters;
 }
 
+function buildBlockFilters({OR = [], hash, blockNum}){
+  const filter  =(hash || blockNum) ? {}: null;
+  if (hash) {
+    filter.hash = {$eq: `${hash}`};
+  }
+
+  if (blockNum) {
+    filter.blockNum = {$eq: `${blockNum}`};
+  }
+
+  let filters = filter ? [filter]: [];
+  for (let i = 0; i < OR.length; i++) {
+    filters = filters.concat(buildBlockFilters(OR[i]));
+  }
+  return filters;
+}
+
 
 module.exports = {
   Query: {
@@ -126,6 +143,19 @@ module.exports = {
     allVotes: async (root, {filter, first, skip, orderBy}, {mongo: {Votes}}) => {
       let query = filter ? {$or: buildVoteFilters(filter)}: {};
       const cursor = Votes.find(query);
+      if (first) {
+        cursor.limit(first);
+      }
+
+      if (skip) {
+        cursor.skip(skip);
+      }
+      return await cursor.toArray();
+    },
+
+    allBlocks: async (root, {filter, first, skip, orderBy}, {mongo: {Blocks}}) => {
+      let query = filter ? {$or: buildBlockFilters(filter)}: {};
+      const cursor = Blocks.find(query);
       if (first) {
         cursor.limit(first);
       }
