@@ -38,7 +38,7 @@ class CentralizedOracle {
       address: this.oracle,
       topicAddress:this.eventAddress,
       status: 'VOTING',
-      token: 'qtum',
+      token: 'QTUM',
       name: this.name,
       options: this.resultNames,
       optionIdxs: Array.from(Array(this.numOfResults).keys()),

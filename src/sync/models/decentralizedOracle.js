@@ -41,7 +41,7 @@ class DecentralizedOracle {
       creatorAddress: this.creator,
       topicAddress:this.eventAddress,
       status: 'VOTING',
-      token: 'bot',
+      token: 'BOT',
       name: this.name,
       options: this.resultNames,
       optionIdxs: optionIdxs,
