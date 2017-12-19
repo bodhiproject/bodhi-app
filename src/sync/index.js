@@ -327,6 +327,7 @@ function sync(db){
               if (err){
                   console.warn(err.message);  // returns error if no matching object found
               }
+              db.Connection.close();
               console.log('sleep');
               setTimeout(startSync, 5000);
             });

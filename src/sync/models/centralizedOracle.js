@@ -35,7 +35,7 @@ class CentralizedOracle {
 
   translate() {
     return {
-      address: this.oracle,
+      address: this.contractAddress,
       topicAddress:this.eventAddress,
       status: 'VOTING',
       token: 'QTUM',

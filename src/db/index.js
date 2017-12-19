@@ -10,10 +10,11 @@ module.exports = async () => {
   Logger.setCurrentLogger((msg, stat) => {
     console.log(`MONGO DB REQUEST ${++logCount}: ${msg}`);
   });
-  Logger.setLevel('debug');
+  Logger.setLevel('info');
   Logger.filter('class', ['Cursor']);
 
   return {
+    Connection: db,
     Topics: db.collection('topics'),
     Oracles: db.collection('oracles'),
     Votes:  db.collection('votes'),
