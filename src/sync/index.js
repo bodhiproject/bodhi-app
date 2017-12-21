@@ -23,6 +23,8 @@ const batchSize=100;
 
 const contractDeployedBlockNum = 48000;
 
+const senderAddress = 'qKjn4fStBaAtwGiwueJf9qFxgpbAvf1xAy'; // hardcode sender address as it doesnt matter
+
 var currentBlockChainHeight = 0
 
 function sequentialLoop(iterations, process, exit){
@@ -62,6 +64,8 @@ function sequentialLoop(iterations, process, exit){
 }
 
 function sync(db){
+  var topicsNeedBalanceUpdate = new Set(), oraclesNeedBalanceUpdate = new Set();
+
   qclient.getBlockCount()
     .then(
       (value)=>{
@@ -72,28 +76,28 @@ function sync(db){
         }
 
         db.Blocks.find({}, options).toArray(function(err, blocks){
-          var start_block = contractDeployedBlockNum;
+          var startBlock = contractDeployedBlockNum;
           if(blocks.length > 0){
-            start_block = Math.max(blocks[0].blockNum + 1, start_block);
+            startBlock = Math.max(blocks[0].blockNum + 1, startBlock);
           }
 
-          var initialSync = sequentialLoop(Math.ceil((currentBlockChainHeight-start_block)/batchSize), function(loop){
-            var end_block = Math.min(start_block + batchSize, currentBlockChainHeight);
+          var initialSync = sequentialLoop(Math.ceil((currentBlockChainHeight-startBlock)/batchSize), function(loop){
+            var endBlock = Math.min(startBlock + batchSize, currentBlockChainHeight);
             var syncTopic = false, syncCOracle = false, syncDOracle = false, syncVote = false,
                 syncOracleResult = false, syncFinalResult = false;
 
             // sync TopicCreated
-            contractEventFactory.searchLogs(start_block, end_block, Contracts.EventFactory.address, [Contracts.EventFactory.TopicCreated])
+            contractEventFactory.searchLogs(startBlock, endBlock, Contracts.EventFactory.address, [Contracts.EventFactory.TopicCreated])
               .then(
                 (result) => {
-                  console.log(`${start_block} - ${end_block}: Retrieved ${result.length} entries from TopicCreated`);
+                  console.log(`${startBlock} - ${endBlock}: Retrieved ${result.length} entries from TopicCreated`);
                   // write to db
                   _.forEach(result, (event, index) => {
                     let blockNum = event.blockNumber;
                     _.forEachRight(event.log, (rawLog) => {
                       if(rawLog['_eventName'] === 'TopicCreated'){
-                        var topic = new Topic(blockNum, rawLog);
-                        db.Topics.insert(topic.translate());
+                        var topic = new Topic(blockNum, rawLog).translate();
+                        db.Topics.insert(topic);
                       }
                     })
                   });
@@ -101,10 +105,10 @@ function sync(db){
                   syncTopic = true;
 
                   if (syncTopic && syncCOracle && syncDOracle && syncVote && syncOracleResult && syncFinalResult){
-                    for(var i=start_block; i<=end_block; i++) {
+                    for(var i=startBlock; i<=endBlock; i++) {
                       db.Blocks.insert({'blockNum': i});
                     }
-                    start_block = end_block+1;
+                    startBlock = endBlock+1;
                     loop.next();
                   }
                 },
@@ -112,26 +116,26 @@ function sync(db){
                 console.log(err.message);
                 syncTopic = true;
                 if (syncTopic && syncCOracle && syncDOracle && syncVote && syncOracleResult && syncFinalResult){
-                  for(var i=start_block; i<=end_block; i++) {
+                  for(var i=startBlock; i<=endBlock; i++) {
                     db.Blocks.insert({'blockNum': i});
                   }
-                  start_block = end_block+1;
+                  startBlock = endBlock+1;
                   loop.next();
                 }
               });
 
             // sync CentrailizedOracleCreatedEvent
-            contractOracleFactory.searchLogs(start_block, end_block, Contracts.EventFactory.address, [Contracts.OracleFactory.CentralizedOracleCreated])
+            contractOracleFactory.searchLogs(startBlock, endBlock, Contracts.EventFactory.address, [Contracts.OracleFactory.CentralizedOracleCreated])
             .then(
               (result) => {
-                console.log(`${start_block} - ${end_block}: Retrieved ${result.length} entries from CentrailizedOracleCreatedEvent`);
+                console.log(`${startBlock} - ${endBlock}: Retrieved ${result.length} entries from CentrailizedOracleCreatedEvent`);
                 // write to db
                 _.forEach(result, (event, index) => {
                   let blockNum = event.blockNumber
                   _.forEachRight(event.log, (rawLog) => {
                     if(rawLog['_eventName'] === 'CentralizedOracleCreated'){
-                      var central_oracle = new CentralizedOracle(blockNum, rawLog);
-                      db.Oracles.insert(central_oracle.translate());
+                      var centralOracle = new CentralizedOracle(blockNum, rawLog).translate();
+                      db.Oracles.insert(centralOracle);
                     }
                   })
                 });
@@ -139,10 +143,10 @@ function sync(db){
                 syncCOracle = true;
 
                 if (syncTopic && syncCOracle && syncDOracle && syncVote && syncOracleResult && syncFinalResult){
-                  for(var i=start_block; i<=end_block; i++) {
+                  for(var i=startBlock; i<=endBlock; i++) {
                     db.Blocks.insert({'blockNum': i});
                   }
-                  start_block = end_block+1;
+                  startBlock = endBlock+1;
                   loop.next();
                 }
               },
@@ -150,26 +154,26 @@ function sync(db){
               console.log(err.message);
               syncCOracle = true;
               if (syncTopic && syncCOracle && syncDOracle && syncVote && syncOracleResult && syncFinalResult){
-                for(var i=start_block; i<=end_block; i++) {
+                for(var i=startBlock; i<=endBlock; i++) {
                   db.Blocks.insert({'blockNum': i});
                 }
-                start_block = end_block+1;
+                startBlock = endBlock+1;
                 loop.next();
               }
             });
 
             // sync DecentrailizedOracleCreatedEvent
-            contractOracleFactory.searchLogs(start_block, end_block, [], Contracts.OracleFactory.DecentralizedOracleCreated)
+            contractOracleFactory.searchLogs(startBlock, endBlock, [], Contracts.OracleFactory.DecentralizedOracleCreated)
             .then(
               (result) => {
-                console.log(`${start_block} - ${end_block}: Retrieved ${result.length} entries from DecentrailizedOracleCreatedEvent`);
+                console.log(`${startBlock} - ${endBlock}: Retrieved ${result.length} entries from DecentrailizedOracleCreatedEvent`);
                 // write to db
                 _.forEach(result, (event, index) => {
                   let blockNum = event.blockNumber
                   _.forEachRight(event.log, (rawLog) => {
                     if(rawLog['_eventName'] === 'DecentralizedOracleCreated'){
-                      var decentral_oracle = new DecentralizedOracle(blockNum, rawLog);
-                      db.Oracles.insert(decentral_oracle.translate());
+                      var decentralOracle = new DecentralizedOracle(blockNum, rawLog).translate();
+                      db.Oracles.insert(decentralOracle);
                     }
                   })
                 });
@@ -177,10 +181,10 @@ function sync(db){
                 syncDOracle = true;
 
                 if (syncTopic && syncCOracle && syncDOracle && syncVote && syncOracleResult && syncFinalResult){
-                  for(var i=start_block; i<=end_block; i++) {
+                  for(var i=startBlock; i<=endBlock; i++) {
                     db.Blocks.insert({'blockNum': i});
                   }
-                  start_block = end_block+1;
+                  startBlock = endBlock+1;
                   loop.next();
                 }
               },
@@ -189,26 +193,27 @@ function sync(db){
 
               syncDOracle = true;
               if (syncTopic && syncCOracle && syncDOracle && syncVote && syncOracleResult && syncFinalResult){
-                for(var i=start_block; i<=end_block; i++) {
+                for(var i=startBlock; i<=endBlock; i++) {
                   db.Blocks.insert({'blockNum': i});
                 }
-                start_block = end_block+1;
+                startBlock = endBlock+1;
                 loop.next();
               }
             });
 
             // sync OracleResultVoted
-            contractCentralizedOracle.searchLogs(start_block, end_block, [], Contracts.CentralizedOracle.OracleResultVoted)
+            contractCentralizedOracle.searchLogs(startBlock, endBlock, [], Contracts.CentralizedOracle.OracleResultVoted)
             .then(
               (result) => {
-                console.log(`${start_block} - ${end_block}: Retrieved ${result.length} entries from OracleResultVoted`);
+                console.log(`${startBlock} - ${endBlock}: Retrieved ${result.length} entries from OracleResultVoted`);
                 // write to db
                 _.forEach(result, (event, index) => {
                   let blockNum = event.blockNumber
                   _.forEachRight(event.log, (rawLog) => {
                     if(rawLog['_eventName'] === 'OracleResultVoted'){
-                      var vote = new Vote(blockNum, rawLog);
-                      db.Votes.insert(vote.translate());
+                      var vote = new Vote(blockNum, rawLog).translate();
+                      oraclesNeedBalanceUpdate.add(vote.oracleAddress);
+                      db.Votes.insert(vote);
                     }
                   })
                 });
@@ -216,10 +221,10 @@ function sync(db){
                 syncVote = true;
 
                 if (syncTopic && syncCOracle && syncDOracle && syncVote && syncOracleResult && syncFinalResult){
-                  for(var i=start_block; i<=end_block; i++) {
+                  for(var i=startBlock; i<=endBlock; i++) {
                     db.Blocks.insert({'blockNum': i});
                   }
-                  start_block = end_block+1;
+                  startBlock = endBlock+1;
                   loop.next();
                 }
               },
@@ -228,26 +233,28 @@ function sync(db){
 
               syncVote = true;
               if (syncTopic && syncCOracle && syncDOracle && syncVote && syncOracleResult && syncFinalResult){
-                for(var i=start_block; i<=end_block; i++) {
+                for(var i=startBlock; i<=endBlock; i++) {
                   db.Blocks.insert({'blockNum': i});
                 }
-                start_block = end_block+1;
+                startBlock = endBlock+1;
                 loop.next();
               }
             });
 
             // sync OracleResultSet
-            contractCentralizedOracle.searchLogs(start_block, end_block, [], Contracts.CentralizedOracle.OracleResultSet)
+            contractCentralizedOracle.searchLogs(startBlock, endBlock, [], Contracts.CentralizedOracle.OracleResultSet)
             .then(
               (result) => {
-                console.log(`${start_block} - ${end_block}: Retrieved ${result.length} entries from OracleResultSet`);
+                console.log(`${startBlock} - ${endBlock}: Retrieved ${result.length} entries from OracleResultSet`);
                 // write to db
                 _.forEach(result, (event, index) => {
                   let blockNum = event.blockNumber
                   _.forEachRight(event.log, (rawLog) => {
                     if(rawLog['_eventName'] === 'OracleResultSet'){
-                      var oracle_result = new OracleResultSet(blockNum, rawLog);
-                      db.Oracles.findAndModify({address: oracle_result.oracleAddress}, [['_id','desc']], {$set: {resultIdx: oracle_result.resultIdx, status:'PENDING'}}, {});
+                      var oracleResult = new OracleResultSet(blockNum, rawLog).translate();
+                      // safeguard to update balance, can be removed in the future
+                      oraclesNeedBalanceUpdate.add(oracleResult.oracleAddress);
+                      db.Oracles.findAndModify({address: oracleResult.oracleAddress}, [['_id','desc']], {$set: {resultIdx: oracleResult.resultIdx, status:'PENDING'}}, {});
                     }
                   })
                 });
@@ -255,10 +262,10 @@ function sync(db){
                 syncOracleResult = true;
 
                 if (syncTopic && syncCOracle && syncDOracle && syncVote && syncOracleResult && syncFinalResult){
-                  for(var i=start_block; i<=end_block; i++) {
+                  for(var i=startBlock; i<=endBlock; i++) {
                     db.Blocks.insert({'blockNum': i});
                   }
-                  start_block = end_block+1;
+                  startBlock = endBlock+1;
                   loop.next();
                 }
               },
@@ -266,32 +273,36 @@ function sync(db){
               console.log(err.message);
               syncOracleResult = true;
               if (syncTopic && syncCOracle && syncDOracle && syncVote && syncOracleResult && syncFinalResult){
-                for(var i=start_block; i<=end_block; i++) {
+                for(var i=startBlock; i<=endBlock; i++) {
                   db.Blocks.insert({'blockNum': i});
                 }
-                start_block = end_block+1;
+                startBlock = endBlock+1;
                 loop.next();
               }
             });
 
             // sync FinalResultSet
-            contractTopicEvent.searchLogs(start_block, end_block, [], Contracts.TopicEvent.FinalResultSet)
+            contractTopicEvent.searchLogs(startBlock, endBlock, [], Contracts.TopicEvent.FinalResultSet)
             .then(
               (result) => {
-                console.log(`${start_block} - ${end_block}: Retrieved ${result.length} entries from FinalResultSet`);
+                console.log(`${startBlock} - ${endBlock}: Retrieved ${result.length} entries from FinalResultSet`);
                 // write to db
                 _.forEach(result, (event, index) => {
                   let blockNum = event.blockNumber
                   _.forEachRight(event.log, (rawLog) => {
                     if(rawLog['_eventName'] === 'FinalResultSet'){
-                      var topic_result = new FinalResultSet(blockNum, rawLog).translate();
-                      db.Topics.findAndModify({address: topic_result.topicAddress}, [['_id','desc']], {$set: {resultIdx: topic_result.resultIdx, status:'WITHDRAW'}}, {}, function(err, object) {
+                      var topicResult = new FinalResultSet(blockNum, rawLog).translate();
+
+                      // safeguard to update balance, can be removed in the future
+                      topicsNeedBalanceUpdate.add(topicResult.topicAddress);
+
+                      db.Topics.findAndModify({address: topicResult.topicAddress}, [['_id','desc']], {$set: {resultIdx: topicResult.resultIdx, status:'WITHDRAW'}}, {}, function(err, object) {
                         if (err){
                             console.warn(err.message);  // returns error if no matching object found
                         }
                       });
 
-                      db.Oracles.findAndModify({topicAddress: topic_result.topicAddress}, [], {$set: {resultIdx: topic_result.resultIdx, status:'WITHDRAW'}}, {}, function(err, object) {
+                      db.Oracles.findAndModify({topicAddress: topicResult.topicAddress}, [], {$set: {resultIdx: topicResult.resultIdx, status:'WITHDRAW'}}, {}, function(err, object) {
                         if (err){
                             console.warn(err.message);  // returns error if no matching object found
                         }
@@ -303,10 +314,10 @@ function sync(db){
                 syncFinalResult = true;
 
                 if (syncTopic && syncCOracle && syncDOracle && syncVote && syncOracleResult && syncFinalResult){
-                  for(var i=start_block; i<=end_block; i++) {
+                  for(var i=startBlock; i<=endBlock; i++) {
                     db.Blocks.insert({'blockNum': i});
                   }
-                  start_block = end_block+1;
+                  startBlock = endBlock+1;
                   loop.next();
                 }
               },
@@ -314,10 +325,10 @@ function sync(db){
               console.log(err.message);
               syncFinalResult = true;
               if (syncTopic && syncCOracle && syncDOracle && syncVote && syncOracleResult && syncFinalResult){
-                for(var i=start_block; i<=end_block; i++) {
+                for(var i=startBlock; i<=endBlock; i++) {
                   db.Blocks.insert({'blockNum': i});
                 }
-                start_block = end_block+1;
+                startBlock = endBlock+1;
                 loop.next();
               }
             });
@@ -327,12 +338,124 @@ function sync(db){
               if (err){
                   console.warn(err.message);  // returns error if no matching object found
               }
-              db.Connection.close();
-              console.log('sleep');
-              setTimeout(startSync, 5000);
+
+              // update all oracles balance
+              var oraclesNeedBalanceUpdateArray = Array.from(oraclesNeedBalanceUpdate)
+              let updateOraclesBalance = oraclesNeedBalanceUpdateArray.map((oracle_address) => {
+                return new Promise((resolve) => {
+                  updateOracleBalance(oracle_address, topicsNeedBalanceUpdate, db, resolve);
+                });
+              })
+
+              Promise.all(updateOraclesBalance).then(() => {
+                var topicsNeedBalanceUpdateArray = Array.from(topicsNeedBalanceUpdate)
+                let updateTopicsBalance = topicsNeedBalanceUpdateArray.map((topic_address) => {
+                  return new Promise((resolve) => {
+                    updateTopicBalance(topic_address, db, resolve);
+                  });
+                })
+
+                Promise.all(updateTopicsBalance).then(() => {
+                  console.log('Update balance done');
+                  db.Connection.close();
+                  console.log('sleep');
+                  setTimeout(startSync, 5000);
+                });
+              });
             });
       });
     });
+  });
+}
+
+function updateOraclesPassedEndBlock(currentBlockChainHeight, db) {
+  db.Oracles.findAndModify({endBlock: {$lt:currentBlockChainHeight}, status: 'VOTING'}, [], {$set: {status:'WAITRESULT'}}, {}, function(err, object) {
+    if (err){
+      console.warn(err.message);  // returns error if no matching object found
+    }
+  });
+}
+
+function updateOracleBalance(oracleAddress, topicSet, db, resolve){
+  db.Oracles.findOne({address: oracleAddress}).then(function(oracle){
+    if(!oracle){
+      resolve();
+      return;
+    }
+    // related topic should be updated
+    topicSet.add(oracle.topicAddress);
+    if(oracle.token === 'QTUM'){
+      // centrailized
+      const contract = qclient.Contract(oracleAddress.slice(2), Contracts.CentralizedOracle.abi);
+      contract.call('getTotalBets',{ methodArgs: [], senderAddress: senderAddress})
+        .then(
+          (value)=>{
+            let balances = _.map(value[0].slice(0, oracle.options.length), (balance_BN) =>{
+              return balance_BN.toNumber();
+            });
+            db.Oracles.updateOne({address: oracleAddress}, { $set: { amounts: balances } }, function(err, res){
+              if(err){
+                console.warn(err.message);
+              }
+              resolve();
+            });
+          }
+        );
+    }else{
+      // decentralized
+      const contract = qclient.Contract(oracleAddress.slice(2), Contracts.DecentralizedOracle.abi);
+      contract.call('getTotalVotes', { methodArgs: [], senderAddress: senderAddress})
+      .then(
+        (value)=>{
+          let balances = _.map(value[0].slice(0, oracle.options.length), (balance_BN) =>{
+            return balance_BN.toNumber();
+          });
+          db.Oracles.updateOne({address: oracleAddress}, { $set: { amounts: balances } }, function(err, res){
+            if(err){
+              console.warn(err.message);
+            }
+            resolve();
+          });
+        }
+      );
+    }
+  });
+}
+
+function updateTopicBalance(topicAddress, db, resolve){
+  db.Topics.findOne({address: topicAddress}).then(function(topic){
+    if(!topic){
+      resolve();
+      return;
+    }
+    const contract = qclient.Contract(topicAddress.slice(2), Contracts.TopicEvent.abi);
+    contract.call('getTotalBets', { methodArgs: [], senderAddress: senderAddress})
+      .then(
+        (value)=>{
+          let balances = _.map(value[0].slice(0, topic.options.length), (balance_BN) =>{
+            return balance_BN.toNumber();
+          });
+          db.Topics.updateOne({address: topicAddress}, { $set: { qtumAmount: balances } }, function(err, res){
+            if(err){
+              console.warn(err.message);
+            }
+            resolve();
+          });
+      });
+
+    contract.call('getTotalVotes', { methodArgs: [], senderAddress: senderAddress})
+      .then(
+        (value)=>{
+          let balances = _.map(value[0].slice(0, topic.options.length), (balance_BN) =>{
+            return balance_BN.toNumber();
+          });
+          db.Topics.updateOne({address: topicAddress}, { $set: { botAmount: balances } }, function(err, res){
+            if(err){
+              console.warn(err.message);
+            }
+            resolve();
+          });
+      });
   });
 }
 
