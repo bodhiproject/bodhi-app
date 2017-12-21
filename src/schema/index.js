@@ -10,8 +10,8 @@ type Topic {
   name: String!
   options: [String!]!
   resultIdx: Int
-  qtumAmount: [Int]
-  botAmount: [Int]
+  qtumAmount: [Int]!
+  botAmount: [Int]!
   blockNum: Int!
   oracles: [Oracle]!
 }
