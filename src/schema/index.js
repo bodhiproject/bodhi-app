@@ -5,6 +5,7 @@ const resolvers = require('./resolvers');
 const typeDefs = `
 type Topic {
   address: String!
+  txid: String!
   creatorAddress: String!
   status: _OracleStatusType!
   name: String!
@@ -18,6 +19,7 @@ type Topic {
 
 type Oracle {
   address: String!
+  txid: String!
   topicAddress: String!
   resultSetterAddress: String
   status: _OracleStatusType!
@@ -34,6 +36,7 @@ type Oracle {
 }
 
 type Vote {
+  txid: String!
   address: String!
   voterAddress: String!
   oracleAddress: String!

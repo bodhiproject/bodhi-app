@@ -2,11 +2,12 @@ const _ = require('lodash');
 const utils = require('../../qweb3.js/src/utils');
 
 class CentralizedOracle {
-  constructor(blockNum, rawLog) {
+  constructor(blockNum, txid, rawLog) {
 
     if (!_.isEmpty(rawLog)) {
-      this.rawLog = rawLog;
+      this.txid = txid;
       this.blockNum = blockNum;
+      this.rawLog = rawLog;
       this.decode();
     }
   }
@@ -36,6 +37,7 @@ class CentralizedOracle {
   translate() {
     return {
       address: this.contractAddress,
+      txid: this.txid,
       topicAddress:this.eventAddress,
       resultSetterAddress:this.oracle,
       status: 'VOTING',

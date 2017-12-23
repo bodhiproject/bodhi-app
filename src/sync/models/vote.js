@@ -2,11 +2,12 @@ const _ = require('lodash');
 const utils = require('../../qweb3.js/src/utils');
 
 class Vote {
-  constructor(blockNum, rawLog) {
+  constructor(blockNum, txid, rawLog) {
 
     if (!_.isEmpty(rawLog)) {
-      this.rawLog = rawLog;
       this.blockNum = blockNum;
+      this.txid = txid;
+      this.rawLog = rawLog;
       this.decode();
     }
   }
@@ -20,6 +21,7 @@ class Vote {
 
   translate() {
     return {
+      txid: this.txid,
       voterAddress: this.participant,
       oracleAddress: this.oracleAddress,
       optionIdx: this.resultIndex,

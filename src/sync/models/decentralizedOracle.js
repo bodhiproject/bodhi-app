@@ -2,11 +2,12 @@ const _ = require('lodash');
 const utils = require('../../qweb3.js/src/utils');
 
 class DecentralizedOracle {
-  constructor(blockNum, rawLog) {
+  constructor(blockNum, txid, rawLog) {
 
     if (!_.isEmpty(rawLog)) {
-      this.rawLog = rawLog;
       this.blockNum = blockNum;
+      this.txid = txid;
+      this.rawLog = rawLog;
       this.decode();
     }
   }
@@ -38,6 +39,7 @@ class DecentralizedOracle {
 
     return {
       address: this.contractAddress,
+      txid: this.txid,
       topicAddress:this.eventAddress,
       status: 'VOTING',
       token: 'BOT',

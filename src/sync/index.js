@@ -94,9 +94,10 @@ function sync(db){
                   // write to db
                   _.forEach(result, (event, index) => {
                     let blockNum = event.blockNumber;
+                    let txid = event.transactionHash;
                     _.forEachRight(event.log, (rawLog) => {
                       if(rawLog['_eventName'] === 'TopicCreated'){
-                        var topic = new Topic(blockNum, rawLog).translate();
+                        var topic = new Topic(blockNum, txid, rawLog).translate();
                         db.Topics.insert(topic);
                       }
                     })
@@ -131,10 +132,11 @@ function sync(db){
                 console.log(`${startBlock} - ${endBlock}: Retrieved ${result.length} entries from CentrailizedOracleCreatedEvent`);
                 // write to db
                 _.forEach(result, (event, index) => {
-                  let blockNum = event.blockNumber
+                  let blockNum = event.blockNumber;
+                  let txid = event.transactionHash;
                   _.forEachRight(event.log, (rawLog) => {
                     if(rawLog['_eventName'] === 'CentralizedOracleCreated'){
-                      var centralOracle = new CentralizedOracle(blockNum, rawLog).translate();
+                      var centralOracle = new CentralizedOracle(blockNum, txid, rawLog).translate();
                       db.Oracles.insert(centralOracle);
                     }
                   })
@@ -169,10 +171,11 @@ function sync(db){
                 console.log(`${startBlock} - ${endBlock}: Retrieved ${result.length} entries from DecentrailizedOracleCreatedEvent`);
                 // write to db
                 _.forEach(result, (event, index) => {
-                  let blockNum = event.blockNumber
+                  let blockNum = event.blockNumber;
+                  let txid = event.transactionHash;
                   _.forEachRight(event.log, (rawLog) => {
                     if(rawLog['_eventName'] === 'DecentralizedOracleCreated'){
-                      var decentralOracle = new DecentralizedOracle(blockNum, rawLog).translate();
+                      var decentralOracle = new DecentralizedOracle(blockNum, txid, rawLog).translate();
                       db.Oracles.insert(decentralOracle);
                     }
                   })
@@ -208,10 +211,11 @@ function sync(db){
                 console.log(`${startBlock} - ${endBlock}: Retrieved ${result.length} entries from OracleResultVoted`);
                 // write to db
                 _.forEach(result, (event, index) => {
-                  let blockNum = event.blockNumber
+                  let blockNum = event.blockNumber;
+                  let txid = event.transactionHash;
                   _.forEachRight(event.log, (rawLog) => {
                     if(rawLog['_eventName'] === 'OracleResultVoted'){
-                      var vote = new Vote(blockNum, rawLog).translate();
+                      var vote = new Vote(blockNum, txid, rawLog).translate();
                       oraclesNeedBalanceUpdate.add(vote.oracleAddress);
                       db.Votes.insert(vote);
                     }
@@ -248,10 +252,9 @@ function sync(db){
                 console.log(`${startBlock} - ${endBlock}: Retrieved ${result.length} entries from OracleResultSet`);
                 // write to db
                 _.forEach(result, (event, index) => {
-                  let blockNum = event.blockNumber
                   _.forEachRight(event.log, (rawLog) => {
                     if(rawLog['_eventName'] === 'OracleResultSet'){
-                      var oracleResult = new OracleResultSet(blockNum, rawLog).translate();
+                      var oracleResult = new OracleResultSet(rawLog).translate();
                       // safeguard to update balance, can be removed in the future
                       oraclesNeedBalanceUpdate.add(oracleResult.oracleAddress);
                       db.Oracles.findAndModify({address: oracleResult.oracleAddress}, [['_id','desc']], {$set: {resultIdx: oracleResult.resultIdx, status:'PENDING'}}, {});
@@ -288,10 +291,9 @@ function sync(db){
                 console.log(`${startBlock} - ${endBlock}: Retrieved ${result.length} entries from FinalResultSet`);
                 // write to db
                 _.forEach(result, (event, index) => {
-                  let blockNum = event.blockNumber
                   _.forEachRight(event.log, (rawLog) => {
                     if(rawLog['_eventName'] === 'FinalResultSet'){
-                      var topicResult = new FinalResultSet(blockNum, rawLog).translate();
+                      var topicResult = new FinalResultSet(rawLog).translate();
 
                       // safeguard to update balance, can be removed in the future
                       topicsNeedBalanceUpdate.add(topicResult.topicAddress);
