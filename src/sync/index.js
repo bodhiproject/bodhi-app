@@ -125,11 +125,11 @@ function sync(db){
                 }
               });
 
-            // sync CentrailizedOracleCreatedEvent
+            // sync CentralizedOracleCreatedEvent
             contractOracleFactory.searchLogs(startBlock, endBlock, Contracts.EventFactory.address, [Contracts.OracleFactory.CentralizedOracleCreated])
             .then(
               (result) => {
-                console.log(`${startBlock} - ${endBlock}: Retrieved ${result.length} entries from CentrailizedOracleCreatedEvent`);
+                console.log(`${startBlock} - ${endBlock}: Retrieved ${result.length} entries from CentralizedOracleCreatedEvent`);
                 // write to db
                 _.forEach(result, (event, index) => {
                   let blockNum = event.blockNumber;
@@ -164,11 +164,11 @@ function sync(db){
               }
             });
 
-            // sync DecentrailizedOracleCreatedEvent
+            // sync DecentralizedOracleCreatedEvent
             contractOracleFactory.searchLogs(startBlock, endBlock, [], Contracts.OracleFactory.DecentralizedOracleCreated)
             .then(
               (result) => {
-                console.log(`${startBlock} - ${endBlock}: Retrieved ${result.length} entries from DecentrailizedOracleCreatedEvent`);
+                console.log(`${startBlock} - ${endBlock}: Retrieved ${result.length} entries from DecentralizedOracleCreatedEvent`);
                 // write to db
                 _.forEach(result, (event, index) => {
                   let blockNum = event.blockNumber;
