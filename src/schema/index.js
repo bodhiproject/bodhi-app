@@ -11,8 +11,8 @@ type Topic {
   name: String!
   options: [String!]!
   resultIdx: Int
-  qtumAmount: [Int]!
-  botAmount: [Int]!
+  qtumAmount: [String!]!
+  botAmount: [String!]!
   blockNum: Int!
   oracles: [Oracle]!
 }
@@ -27,12 +27,12 @@ type Oracle {
   name: String!
   options: [String!]!
   optionIdxs: [Int!]!
-  amounts: [Int]
+  amounts: [String!]!
   resultIdx: Int
   blockNum: Int!
   endBlock: Int!
   resultSetEndBlock: Int,
-  consensusThreshold: Int
+  consensusThreshold: String
 }
 
 type Vote {
@@ -41,7 +41,7 @@ type Vote {
   voterAddress: String!
   oracleAddress: String!
   optionIdx: Int!
-  amount: Int!
+  amount: String!
   blockNum: Int!
 }
 

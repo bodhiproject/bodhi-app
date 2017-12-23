@@ -40,8 +40,8 @@ class Topic {
       name: this.name,
       options: this.resultNames,
       resultIdx: null,
-      qtumAmount: _.fill(Array(this.resultNames.length), 0),
-      botAmount:_.fill(Array(this.resultNames.length), 0),
+      qtumAmount: _.fill(Array(this.resultNames.length), '0'),
+      botAmount:_.fill(Array(this.resultNames.length), '0'),
       blockNum: this.blockNum,
     }
   }

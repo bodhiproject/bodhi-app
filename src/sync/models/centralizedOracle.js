@@ -31,7 +31,7 @@ class CentralizedOracle {
     this.numOfResults = this.rawLog['_numOfResults'].toNumber();
     this.bettingEndBlock = this.rawLog['_bettingEndBlock'].toNumber();
     this.resultSettingEndBlock = this.rawLog['_resultSettingEndBlock'].toNumber();
-    this.consensusThreshold = this.rawLog['_consensusThreshold'].toNumber();
+    this.consensusThreshold = this.rawLog['_consensusThreshold'].toJSON();
   }
 
   translate() {
@@ -45,11 +45,12 @@ class CentralizedOracle {
       name: this.name,
       options: this.resultNames,
       optionIdxs: Array.from(Array(this.numOfResults).keys()),
-      amounts: _.fill(Array(this.numOfResults), 0),
+      amounts: _.fill(Array(this.numOfResults), `0`),
       resultIdx: null,
       blockNum: this.blockNum,
       endBlock: this.bettingEndBlock,
-      resultSetEndBlock: this.resultSettingEndBlock
+      resultSetEndBlock: this.resultSettingEndBlock,
+      consensusThreshold: this.consensusThreshold
     }
   }
 }

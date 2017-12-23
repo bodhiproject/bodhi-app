@@ -393,7 +393,7 @@ function updateOracleBalance(oracleAddress, topicSet, db, resolve){
         .then(
           (value)=>{
             let balances = _.map(value[0].slice(0, oracle.options.length), (balance_BN) =>{
-              return balance_BN.toNumber();
+              return balance_BN.toJSON();
             });
             db.Oracles.updateOne({address: oracleAddress}, { $set: { amounts: balances } }, function(err, res){
               if(err){
@@ -410,7 +410,7 @@ function updateOracleBalance(oracleAddress, topicSet, db, resolve){
       .then(
         (value)=>{
           let balances = _.map(value[0].slice(0, oracle.options.length), (balance_BN) =>{
-            return balance_BN.toNumber();
+            return balance_BN.toJSON();
           });
           db.Oracles.updateOne({address: oracleAddress}, { $set: { amounts: balances } }, function(err, res){
             if(err){
@@ -435,7 +435,7 @@ function updateTopicBalance(topicAddress, db, resolve){
       .then(
         (value)=>{
           let balances = _.map(value[0].slice(0, topic.options.length), (balance_BN) =>{
-            return balance_BN.toNumber();
+            return balance_BN.toJSON();
           });
           db.Topics.updateOne({address: topicAddress}, { $set: { qtumAmount: balances } }, function(err, res){
             if(err){
@@ -449,7 +449,7 @@ function updateTopicBalance(topicAddress, db, resolve){
       .then(
         (value)=>{
           let balances = _.map(value[0].slice(0, topic.options.length), (balance_BN) =>{
-            return balance_BN.toNumber();
+            return balance_BN.toJSON();
           });
           db.Topics.updateOne({address: topicAddress}, { $set: { botAmount: balances } }, function(err, res){
             if(err){

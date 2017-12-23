@@ -46,7 +46,7 @@ class DecentralizedOracle {
       name: this.name,
       options: this.resultNames,
       optionIdxs: optionIdxs,
-      amounts: _.fill(Array(this.numOfResults), 0),
+      amounts: _.fill(Array(this.numOfResults), '0'),
       resultIdx: null,
       blockNum: this.blockNum,
       endBlock: this.arbitrationEndBlock,

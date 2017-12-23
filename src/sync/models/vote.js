@@ -16,7 +16,7 @@ class Vote {
     this.oracleAddress = this.rawLog['_oracleAddress'];
     this.participant = this.rawLog['_participant'];
     this.resultIndex = this.rawLog['_resultIndex'].toNumber();
-    this.votedAmount = this.rawLog['_votedAmount'].toNumber();
+    this.votedAmount = this.rawLog['_votedAmount'].toJSON();
   }
 
   translate() {
