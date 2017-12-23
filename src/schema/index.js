@@ -29,6 +29,7 @@ type Oracle {
   resultIdx: Int
   blockNum: Int!
   endBlock: Int!
+  resultSetEndBlock: Int
 }
 
 type Vote {
