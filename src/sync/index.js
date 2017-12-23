@@ -19,7 +19,7 @@ const contractTopicEvent = qclient.Contract(null, Contracts.TopicEvent.abi);
 const contractCentralizedOracle = qclient.Contract(null, Contracts.CentralizedOracle.abi);
 const contractDecentralizedOracle = qclient.Contract(null, Contracts.DecentralizedOracle.abi);
 
-const batchSize=100;
+const batchSize=500;
 
 const contractDeployedBlockNum = 48000;
 
@@ -335,47 +335,67 @@ function sync(db){
               }
             });
         }, function(){
-            // update all oracles passed endblock
-            db.Oracles.findAndModify({endBlock: {$lt:currentBlockChainHeight}, status: 'VOTING'}, [], {$set: {status:'WAITRESULT'}}, {}, function(err, object) {
-              if (err){
-                  console.warn(err.message);  // returns error if no matching object found
-              }
+            let updateOraclesPassedEndBlockPromise = new Promise((resolve) => {
+              updateOraclesPassedEndBlock(currentBlockChainHeight, db, resolve);
+            })
 
-              // update all oracles balance
-              var oraclesNeedBalanceUpdateArray = Array.from(oraclesNeedBalanceUpdate)
-              let updateOraclesBalance = oraclesNeedBalanceUpdateArray.map((oracle_address) => {
+            var oraclesNeedBalanceUpdateArray = Array.from(oraclesNeedBalanceUpdate)
+            let promiseStack = oraclesNeedBalanceUpdateArray.map((oracle_address) => {
+              return new Promise((resolve) => {
+                updateOracleBalance(oracle_address, topicsNeedBalanceUpdate, db, resolve);
+              });
+            })
+
+            promiseStack.push(updateOraclesPassedEndBlockPromise);
+
+            Promise.all(promiseStack).then(() => {
+              var topicsNeedBalanceUpdateArray = Array.from(topicsNeedBalanceUpdate)
+              let promiseStack2 = topicsNeedBalanceUpdateArray.map((topic_address) => {
                 return new Promise((resolve) => {
-                  updateOracleBalance(oracle_address, topicsNeedBalanceUpdate, db, resolve);
+                  updateTopicBalance(topic_address, db, resolve);
                 });
               })
 
-              Promise.all(updateOraclesBalance).then(() => {
-                var topicsNeedBalanceUpdateArray = Array.from(topicsNeedBalanceUpdate)
-                let updateTopicsBalance = topicsNeedBalanceUpdateArray.map((topic_address) => {
-                  return new Promise((resolve) => {
-                    updateTopicBalance(topic_address, db, resolve);
-                  });
-                })
+              let updateOraclesPassedResultSetEndBlockPromise = new Promise((resolve) => {
+                updateCentralizedOraclesPassedResultSetEndBlock(currentBlockChainHeight, db, resolve);
+              })
 
-                Promise.all(updateTopicsBalance).then(() => {
-                  console.log('Update balance done');
-                  db.Connection.close();
-                  console.log('sleep');
-                  setTimeout(startSync, 5000);
-                });
+              promiseStack2.push(updateOraclesPassedResultSetEndBlockPromise);
+              console.log('Update Oracles Balance done');
+              Promise.all(promiseStack2).then(() => {
+                console.log('Update Topic Balance done');
+                db.Connection.close();
+                console.log('sleep');
+                setTimeout(startSync, 5000);
               });
             });
-      });
+          });
     });
   });
 }
 
-function updateOraclesPassedEndBlock(currentBlockChainHeight, db) {
-  db.Oracles.findAndModify({endBlock: {$lt:currentBlockChainHeight}, status: 'VOTING'}, [], {$set: {status:'WAITRESULT'}}, {}, function(err, object) {
+function updateOraclesPassedEndBlock(currentBlockChainHeight, db, resolve){
+  // all central & decentral oracles with VOTING status and endBlock less than currentBlockChainHeight
+  db.Oracles.findAndModify({endBlock: {$lt:currentBlockChainHeight}, status: 'VOTING'}, [],
+    {$set: {status:'WAITRESULT'}}, {}, function(err, object) {
     if (err){
       console.warn(err.message);  // returns error if no matching object found
     }
+    console.log('Update Oracles Passed EndBlock done');
+    resolve();
   });
+}
+
+function updateCentralizedOraclesPassedResultSetEndBlock(currentBlockChainHeight, db, resolve){
+  // central oracels with WAITRESULT status and resultSetEndBlock less than  currentBlockChainHeight
+  db.Oracles.findAndModify({resultSetEndBlock: {$lt: currentBlockChainHeight}, token: 'QTUM', status: 'WAITRESULT'}, [],
+    {$set: {status:'OPENRESULTSET'}}, {}, function(err, object){
+      if (err){
+        console.warn(err.message);
+      }
+      console.log('Update Oracles Passed ResultSetEndBlock done');
+      resolve();
+    });
 }
 
 function updateOracleBalance(oracleAddress, topicSet, db, resolve){
