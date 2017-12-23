@@ -37,6 +37,7 @@ class CentralizedOracle {
     return {
       address: this.contractAddress,
       topicAddress:this.eventAddress,
+      resultSetterAddress:this.oracle,
       status: 'VOTING',
       token: 'QTUM',
       name: this.name,

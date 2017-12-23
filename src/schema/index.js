@@ -18,8 +18,8 @@ type Topic {
 
 type Oracle {
   address: String!
-  creatorAddress: String!
   topicAddress: String!
+  resultSetterAddress: String
   status: _OracleStatusType!
   token: String!
   name: String!
