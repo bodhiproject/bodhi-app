@@ -47,7 +47,8 @@ class DecentralizedOracle {
       amounts: _.fill(Array(this.numOfResults), 0),
       resultIdx: null,
       blockNum: this.blockNum,
-      endBlock: this.arbitrationEndBlock
+      endBlock: this.arbitrationEndBlock,
+      consensusThreshold: this.consensusThreshold
     }
   }
 }

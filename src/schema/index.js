@@ -29,7 +29,8 @@ type Oracle {
   resultIdx: Int
   blockNum: Int!
   endBlock: Int!
-  resultSetEndBlock: Int
+  resultSetEndBlock: Int,
+  consensusThreshold: Int
 }
 
 type Vote {
