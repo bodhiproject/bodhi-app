@@ -18,9 +18,9 @@ function buildTopicFilters({OR = [], address, status}) {
   return filters;
 }
 
-function buildOracleFilters({OR = [], address, topicAddress, status}) {
+function buildOracleFilters({OR = [], address, topicAddress, resultSetterQAddress, status}) {
   const filter = (address || topicAddress || status) ? {}: null;
-  if (address) {
+  if(address) {
     filter.address = {$eq: `${address}`};
   }
 
@@ -28,20 +28,24 @@ function buildOracleFilters({OR = [], address, topicAddress, status}) {
     filter.topicAddress = {$eq: `${topicAddress}`};
   }
 
-  if (status) {
+  if(resultSetterQAddress){
+    filter.resultSetterQAddress = {$eq: `${resultSetterQAddress}`};
+  }
+
+  if(status) {
     filter.status = {$eq: `${status}`};
   }
 
   let filters = filter ? [filter]:[]
-  for (let i = 0; i < OR.length; i++) {
+  for(let i = 0; i < OR.length; i++) {
     filters = filters.concat(buildOracleFilters(OR[i]));
   }
   return filters;
 }
 
 function buildSearchOracleFilter(searchPhrase) {
-  const filterFields = ["name", "address", "creatorAddress", "topicAddress"];
-  if (!searchPhrase) {
+  const filterFields = ["name", "address", "topicAddress", "resultSetterAddress", "resultSetterQAddress"];
+  if(!searchPhrase) {
     return [];
   }
 
@@ -55,7 +59,7 @@ function buildSearchOracleFilter(searchPhrase) {
   return filters;
 }
 
-function buildVoteFilters({OR = [], address, oracleAddress, voterAddress, optionIdx}) {
+function buildVoteFilters({OR = [], address, oracleAddress, voterAddress, voterQAddress, optionIdx}) {
   const filter = (address || oracleAddress || voterAddress || optionIdx) ? {} : null;
   if (address) {
     filter.address = {$eq: `${address}`};
@@ -67,6 +71,10 @@ function buildVoteFilters({OR = [], address, oracleAddress, voterAddress, option
 
   if (voterAddress) {
     filter.voterAddress = {$eq: `${voterAddress}`};
+  }
+
+  if (voterQAddress) {
+    filter.voterQAddress = {$eq: `${voterQAddress}`};
   }
 
   if (optionIdx) {

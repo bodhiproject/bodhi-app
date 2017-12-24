@@ -7,6 +7,7 @@ type Topic {
   address: String!
   txid: String!
   creatorAddress: String!
+  creatorQAddress: String!
   status: _OracleStatusType!
   name: String!
   options: [String!]!
@@ -22,6 +23,7 @@ type Oracle {
   txid: String!
   topicAddress: String!
   resultSetterAddress: String
+  resultSetterQAddress: String
   status: _OracleStatusType!
   token: String!
   name: String!
@@ -39,6 +41,7 @@ type Vote {
   txid: String!
   address: String!
   voterAddress: String!
+  voterQAddress: String!
   oracleAddress: String!
   optionIdx: Int!
   amount: String!
@@ -67,6 +70,8 @@ input OracleFilter {
   OR: [OracleFilter!]
   address: String
   topicAddress: String
+  resultSetterAddress: String
+  resultSetterQAddress: String
   status: _OracleStatusType
 }
 
@@ -75,6 +80,7 @@ input VoteFilter {
   address: String
   oracleAddress: String
   voterAddress: String
+  voterQAddress: String
   optionIdx: Int
 }
 

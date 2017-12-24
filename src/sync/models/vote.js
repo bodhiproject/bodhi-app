@@ -1,4 +1,5 @@
 const _ = require('lodash');
+const qDecoder = require('../../qweb3.js/src/decoder');
 const utils = require('../../qweb3.js/src/utils');
 
 class Vote {
@@ -23,6 +24,7 @@ class Vote {
     return {
       txid: this.txid,
       voterAddress: this.participant,
+      voterQAddress: qDecoder.toQtumAddress(this.participant),
       oracleAddress: this.oracleAddress,
       optionIdx: this.resultIndex,
       amount: this.votedAmount,

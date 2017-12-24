@@ -1,4 +1,5 @@
 const _ = require('lodash');
+const qDecoder = require('../../qweb3.js/src/decoder');
 const utils = require('../../qweb3.js/src/utils');
 
 class CentralizedOracle {
@@ -14,15 +15,11 @@ class CentralizedOracle {
 
   decode() {
     let nameHex = _.reduce(this.rawLog['_name'], (hexStr, value) => {
-      let valStr = value;
-      if (valStr.indexOf('0x') === 0) {
-        valStr = valStr.slice(2);
-      }
-      return hexStr += valStr;
+      return hexStr += value;
     }, '');
-    this.name = _.trimEnd(utils.toAscii(nameHex), '\u0000');
+    this.name = utils.toUtf8(nameHex);
 
-    let intermedia = _.map(this.rawLog['_resultNames'], (item) => _.trimEnd(utils.toAscii(item), '\u0000'));
+    let intermedia = _.map(this.rawLog['_resultNames'], (item) => utils.toUtf8(item));
     this.resultNames = _.filter(intermedia, item => !!item);
 
     this.contractAddress = this.rawLog['_contractAddress'];
@@ -40,6 +37,7 @@ class CentralizedOracle {
       txid: this.txid,
       topicAddress:this.eventAddress,
       resultSetterAddress:this.oracle,
+      resultSetterQAddress: qDecoder.toQtumAddress(this.oracle),
       status: 'VOTING',
       token: 'QTUM',
       name: this.name,

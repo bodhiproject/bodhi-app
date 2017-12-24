@@ -13,11 +13,6 @@ const OracleResultSet = require('./models/oracleResultSet');
 const FinalResultSet = require('./models/finalResultSet');
 
 const Contracts = require('./contracts');
-const contractEventFactory = qclient.Contract(Contracts.EventFactory.address, Contracts.EventFactory.abi);
-const contractOracleFactory = qclient.Contract(Contracts.OracleFactory.address, Contracts.OracleFactory.abi);
-const contractTopicEvent = qclient.Contract(null, Contracts.TopicEvent.abi);
-const contractCentralizedOracle = qclient.Contract(null, Contracts.CentralizedOracle.abi);
-const contractDecentralizedOracle = qclient.Contract(null, Contracts.DecentralizedOracle.abi);
 
 const batchSize=500;
 
@@ -64,6 +59,7 @@ function sequentialLoop(iterations, process, exit){
 }
 
 function sync(db){
+  const removeHexPrefix = true;
   var topicsNeedBalanceUpdate = new Set(), oraclesNeedBalanceUpdate = new Set();
 
   qclient.getBlockCount()
@@ -87,7 +83,7 @@ function sync(db){
                 syncOracleResult = false, syncFinalResult = false;
 
             // sync TopicCreated
-            contractEventFactory.searchLogs(startBlock, endBlock, Contracts.EventFactory.address, [Contracts.EventFactory.TopicCreated])
+            qclient.searchLogs(startBlock, endBlock, Contracts.EventFactory.address, [Contracts.EventFactory.TopicCreated], Contracts, removeHexPrefix)
               .then(
                 (result) => {
                   console.log(`${startBlock} - ${endBlock}: Retrieved ${result.length} entries from TopicCreated`);
@@ -126,7 +122,7 @@ function sync(db){
               });
 
             // sync CentralizedOracleCreatedEvent
-            contractOracleFactory.searchLogs(startBlock, endBlock, Contracts.EventFactory.address, [Contracts.OracleFactory.CentralizedOracleCreated])
+            qclient.searchLogs(startBlock, endBlock, Contracts.EventFactory.address, [Contracts.OracleFactory.CentralizedOracleCreated], Contracts, removeHexPrefix)
             .then(
               (result) => {
                 console.log(`${startBlock} - ${endBlock}: Retrieved ${result.length} entries from CentralizedOracleCreatedEvent`);
@@ -165,7 +161,7 @@ function sync(db){
             });
 
             // sync DecentralizedOracleCreatedEvent
-            contractOracleFactory.searchLogs(startBlock, endBlock, [], Contracts.OracleFactory.DecentralizedOracleCreated)
+            qclient.searchLogs(startBlock, endBlock, [], Contracts.OracleFactory.DecentralizedOracleCreated, Contracts, removeHexPrefix)
             .then(
               (result) => {
                 console.log(`${startBlock} - ${endBlock}: Retrieved ${result.length} entries from DecentralizedOracleCreatedEvent`);
@@ -205,7 +201,7 @@ function sync(db){
             });
 
             // sync OracleResultVoted
-            contractCentralizedOracle.searchLogs(startBlock, endBlock, [], Contracts.CentralizedOracle.OracleResultVoted)
+            qclient.searchLogs(startBlock, endBlock, [], Contracts.CentralizedOracle.OracleResultVoted, Contracts, removeHexPrefix)
             .then(
               (result) => {
                 console.log(`${startBlock} - ${endBlock}: Retrieved ${result.length} entries from OracleResultVoted`);
@@ -246,7 +242,7 @@ function sync(db){
             });
 
             // sync OracleResultSet
-            contractCentralizedOracle.searchLogs(startBlock, endBlock, [], Contracts.CentralizedOracle.OracleResultSet)
+            qclient.searchLogs(startBlock, endBlock, [], Contracts.CentralizedOracle.OracleResultSet, Contracts, removeHexPrefix)
             .then(
               (result) => {
                 console.log(`${startBlock} - ${endBlock}: Retrieved ${result.length} entries from OracleResultSet`);
@@ -285,7 +281,7 @@ function sync(db){
             });
 
             // sync FinalResultSet
-            contractTopicEvent.searchLogs(startBlock, endBlock, [], Contracts.TopicEvent.FinalResultSet)
+            qclient.searchLogs(startBlock, endBlock, [], Contracts.TopicEvent.FinalResultSet, Contracts, removeHexPrefix)
             .then(
               (result) => {
                 console.log(`${startBlock} - ${endBlock}: Retrieved ${result.length} entries from FinalResultSet`);
@@ -408,7 +404,7 @@ function updateOracleBalance(oracleAddress, topicSet, db, resolve){
     topicSet.add(oracle.topicAddress);
     if(oracle.token === 'QTUM'){
       // centrailized
-      const contract = qclient.Contract(oracleAddress.slice(2), Contracts.CentralizedOracle.abi);
+      const contract = qclient.Contract(oracleAddress, Contracts.CentralizedOracle.abi);
       contract.call('getTotalBets',{ methodArgs: [], senderAddress: senderAddress})
         .then(
           (value)=>{
@@ -425,7 +421,7 @@ function updateOracleBalance(oracleAddress, topicSet, db, resolve){
         );
     }else{
       // decentralized
-      const contract = qclient.Contract(oracleAddress.slice(2), Contracts.DecentralizedOracle.abi);
+      const contract = qclient.Contract(oracleAddress, Contracts.DecentralizedOracle.abi);
       contract.call('getTotalVotes', { methodArgs: [], senderAddress: senderAddress})
       .then(
         (value)=>{
@@ -450,7 +446,7 @@ function updateTopicBalance(topicAddress, db, resolve){
       resolve();
       return;
     }
-    const contract = qclient.Contract(topicAddress.slice(2), Contracts.TopicEvent.abi);
+    const contract = qclient.Contract(topicAddress, Contracts.TopicEvent.abi);
     contract.call('getTotalBets', { methodArgs: [], senderAddress: senderAddress})
       .then(
         (value)=>{

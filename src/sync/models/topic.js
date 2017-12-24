@@ -1,4 +1,5 @@
 const _ = require('lodash');
+const qDecoder = require('../../qweb3.js/src/decoder');
 const utils = require('../../qweb3.js/src/utils');
 
 class Topic {
@@ -14,14 +15,10 @@ class Topic {
 
   decode() {
     let nameHex = _.reduce(this.rawLog['_name'], (hexStr, value) => {
-      let valStr = value;
-      if (valStr.indexOf('0x') === 0) {
-        valStr = valStr.slice(2);
-      }
-      return hexStr += valStr;
+      return hexStr += value;
     }, '');
-    this.name = _.trimEnd(utils.toAscii(nameHex), '\u0000');
-    let intermedia = _.map(this.rawLog['_resultNames'], (item) => _.trimEnd(utils.toAscii(item), '\u0000'));
+    this.name = utils.toUtf8(nameHex)
+    let intermedia = _.map(this.rawLog['_resultNames'], (item) => utils.toUtf8(item));
     this.resultNames = _.filter(intermedia, item => !!item);
 
     this.topicAddress = this.rawLog['_topicAddress'];
@@ -36,6 +33,7 @@ class Topic {
       address: this.topicAddress,
       txid: this.txid,
       creatorAddress: this.creator,
+      creatorQAddress:qDecoder.toQtumAddress(this.creator),
       status: 'VOTING',
       name: this.name,
       options: this.resultNames,
