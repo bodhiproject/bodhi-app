@@ -408,7 +408,7 @@ function updateOraclesPassedEndBlock(currentBlockChainHeight, db, resolve){
   db.Oracles.findAndModify({endBlock: {$lt:currentBlockChainHeight}, status: 'VOTING'}, [],
     {$set: {status:'WAITRESULT'}}, {}, function(err, object) {
     if (err){
-      console.warn(err.message);  // returns error if no matching object found
+      console.warn(`Error: ${err.message}`); // returns error if no matching object found
     }
     console.log('Update Oracles Passed EndBlock done');
     resolve();
@@ -420,7 +420,7 @@ function updateCentralizedOraclesPassedResultSetEndBlock(currentBlockChainHeight
   db.Oracles.findAndModify({resultSetEndBlock: {$lt: currentBlockChainHeight}, token: 'QTUM', status: 'WAITRESULT'}, [],
     {$set: {status:'OPENRESULTSET'}}, {}, function(err, object){
       if (err){
-        console.warn(err.message);
+        console.warn(`Error: ${err.message}`);
       }
       console.log('Update Oracles Passed ResultSetEndBlock done');
       resolve();
@@ -446,7 +446,7 @@ function updateOracleBalance(oracleAddress, topicSet, db, resolve){
             });
             db.Oracles.updateOne({address: oracleAddress}, { $set: { amounts: balances } }, function(err, res){
               if(err){
-                console.warn(err.message);
+                console.warn(`Error: ${err.message}`);
               }
               resolve();
             });
@@ -463,7 +463,7 @@ function updateOracleBalance(oracleAddress, topicSet, db, resolve){
           });
           db.Oracles.updateOne({address: oracleAddress}, { $set: { amounts: balances } }, function(err, res){
             if(err){
-              console.warn(err.message);
+              console.warn(`Error: ${err.message}`);
             }
             resolve();
           });
@@ -488,7 +488,7 @@ function updateTopicBalance(topicAddress, db, resolve){
           });
           db.Topics.updateOne({address: topicAddress}, { $set: { qtumAmount: balances } }, function(err, res){
             if(err){
-              console.warn(err.message);
+              console.warn(`Error: ${err.message}`);
             }
             resolve();
           });
@@ -502,7 +502,7 @@ function updateTopicBalance(topicAddress, db, resolve){
           });
           db.Topics.updateOne({address: topicAddress}, { $set: { botAmount: balances } }, function(err, res){
             if(err){
-              console.warn(err.message);
+              console.warn(`Error: ${err.message}`);
             }
             resolve();
           });
