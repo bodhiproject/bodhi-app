@@ -100,8 +100,8 @@ async function sync(db){
         _.forEachRight(event.log, (rawLog) => {
           if(rawLog['_eventName'] === 'TopicCreated'){
             var insertTopicDB = new Promise(async (resolve) =>{
-              var topic = new Topic(blockNum, txid, rawLog).translate();
               try {
+                var topic = new Topic(blockNum, txid, rawLog).translate();
                 await db.Topics.insert(topic);
                 resolve();
               } catch(err) {
@@ -142,8 +142,8 @@ async function sync(db){
         _.forEachRight(event.log, (rawLog) => {
           if(rawLog['_eventName'] === 'CentralizedOracleCreated'){
             var insertOracleDB = new Promise(async (resolve) =>{
-              var centralOracle = new CentralizedOracle(blockNum, txid, rawLog).translate();
               try {
+                var centralOracle = new CentralizedOracle(blockNum, txid, rawLog).translate();
                 await db.Oracles.insert(centralOracle);
                 resolve();
               } catch(err) {
@@ -184,8 +184,8 @@ async function sync(db){
         _.forEachRight(event.log, (rawLog) => {
           if(rawLog['_eventName'] === 'DecentralizedOracleCreated'){
             var insertOracleDB = new Promise(async (resolve) =>{
-              var decentralOracle = new DecentralizedOracle(blockNum, txid, rawLog).translate();
               try {
+                var decentralOracle = new DecentralizedOracle(blockNum, txid, rawLog).translate();
                 await db.Oracles.insert(decentralOracle);
                 resolve();
               } catch(err) {
@@ -225,9 +225,10 @@ async function sync(db){
         _.forEachRight(event.log, (rawLog) => {
           if(rawLog['_eventName'] === 'OracleResultVoted'){
             var insertVoteDB = new Promise(async (resolve) =>{
-              var vote = new Vote(blockNum, txid, rawLog).translate();
-              oraclesNeedBalanceUpdate.add(vote.oracleAddress);
               try {
+                var vote = new Vote(blockNum, txid, rawLog).translate();
+                oraclesNeedBalanceUpdate.add(vote.oracleAddress);
+
                 await db.Votes.insert(vote);
                 resolve();
               } catch(err){
@@ -266,10 +267,11 @@ async function sync(db){
         _.forEachRight(event.log, (rawLog) => {
           if(rawLog['_eventName'] === 'OracleResultSet'){
             var updateOracleResult = new Promise(async (resolve) =>{
-              var oracleResult = new OracleResultSet(rawLog).translate();
-              // safeguard to update balance, can be removed in the future
-              oraclesNeedBalanceUpdate.add(oracleResult.oracleAddress);
               try {
+                var oracleResult = new OracleResultSet(rawLog).translate();
+                // safeguard to update balance, can be removed in the future
+                oraclesNeedBalanceUpdate.add(oracleResult.oracleAddress);
+
                 await db.Oracles.findAndModify({address: oracleResult.oracleAddress}, [['_id','desc']], {$set: {resultIdx: oracleResult.resultIdx, status:'PENDING'}}, {});
                 resolve();
               } catch(err) {
@@ -308,10 +310,11 @@ async function sync(db){
         _.forEachRight(event.log, (rawLog) => {
           if(rawLog['_eventName'] === 'FinalResultSet'){
             var updateFinalResultSet = new Promise(async (resolve) =>{
-              var topicResult = new FinalResultSet(rawLog).translate();
-              // safeguard to update balance, can be removed in the future
-              topicsNeedBalanceUpdate.add(topicResult.topicAddress);
               try {
+                var topicResult = new FinalResultSet(rawLog).translate();
+                // safeguard to update balance, can be removed in the future
+                topicsNeedBalanceUpdate.add(topicResult.topicAddress);
+              
                 await db.Topics.findAndModify({address: topicResult.topicAddress}, [['_id','desc']], {$set: {resultIdx: topicResult.resultIdx, status:'WITHDRAW'}}, {});
                 resolve();
               } catch(err) {
