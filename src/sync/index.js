@@ -86,7 +86,7 @@ async function sync(db){
         result = await qclient.searchLogs(startBlock, endBlock, Contracts.EventFactory.address, [Contracts.EventFactory.TopicCreated], Contracts, removeHexPrefix);
         console.log('searchlog TopicCreated')
       } catch(err) {
-        console.error(err.message);
+        console.error(`Error: ${err.message}`);
         resolve();
         return;
       }
@@ -105,7 +105,7 @@ async function sync(db){
                 await db.Topics.insert(topic);
                 resolve();
               } catch(err) {
-                console.error(err.message);
+                console.error(`Error: ${err.message}`);
                 resolve();
                 return;
               }
@@ -128,7 +128,7 @@ async function sync(db){
         result = await qclient.searchLogs(startBlock, endBlock, Contracts.EventFactory.address, [Contracts.OracleFactory.CentralizedOracleCreated], Contracts, removeHexPrefix);
         console.log('searchlog CentralizedOracleCreated')
       } catch(err) {
-        console.error(err.message);
+        console.error(`Error: ${err.message}`);
         resolve();
         return;
       }
@@ -147,7 +147,7 @@ async function sync(db){
                 await db.Oracles.insert(centralOracle);
                 resolve();
               } catch(err) {
-                console.error(err.message);
+                console.error(`Error: ${err.message}`);
                 resolve();
                 return;
               }
@@ -170,7 +170,7 @@ async function sync(db){
         result = await qclient.searchLogs(startBlock, endBlock, [], Contracts.OracleFactory.DecentralizedOracleCreated, Contracts, removeHexPrefix)
         console.log('searchlog DecentralizedOracleCreated')
       } catch(err) {
-        console.error(err.message);
+        console.error(`Error: ${err.message}`);
         resolve();
         return;
       }
@@ -189,7 +189,7 @@ async function sync(db){
                 await db.Oracles.insert(decentralOracle);
                 resolve();
               } catch(err) {
-                console.error(err.message);
+                console.error(`Error: ${err.message}`);
                 resolve();
                 return;
               }
@@ -211,7 +211,7 @@ async function sync(db){
         result = await qclient.searchLogs(startBlock, endBlock, [], Contracts.CentralizedOracle.OracleResultVoted, Contracts, removeHexPrefix)
         console.log('searchlog OracleResultVoted')
       } catch(err) {
-        console.error(err.message);
+        console.error(`Error: ${err.message}`);
         resolve();
         return;
       }
@@ -232,7 +232,7 @@ async function sync(db){
                 await db.Votes.insert(vote);
                 resolve();
               } catch(err){
-                console.error(err.message);
+                console.error(`Error: ${err.message}`);
                 resolve();
                 return;
               }
@@ -255,7 +255,7 @@ async function sync(db){
         result = await qclient.searchLogs(startBlock, endBlock, [], Contracts.CentralizedOracle.OracleResultSet, Contracts, removeHexPrefix)
         console.log('searchlog OracleResultSet')
       } catch(err) {
-        console.error(err.message);
+        console.error(`Error: ${err.message}`);
         resolve();
         return;
       }
@@ -275,7 +275,7 @@ async function sync(db){
                 await db.Oracles.findAndModify({address: oracleResult.oracleAddress}, [['_id','desc']], {$set: {resultIdx: oracleResult.resultIdx, status:'PENDING'}}, {});
                 resolve();
               } catch(err) {
-                console.error(err.message);
+                console.error(`Error: ${err.message}`);
                 resolve();
                 return;
               }
@@ -298,7 +298,7 @@ async function sync(db){
         result = await qclient.searchLogs(startBlock, endBlock, [], Contracts.TopicEvent.FinalResultSet, Contracts, removeHexPrefix)
         console.log('searchlog FinalResultSet')
       } catch(err) {
-        console.error(err.message);
+        console.error(`Error: ${err.message}`);
         resolve();
         return;
       }
@@ -314,11 +314,11 @@ async function sync(db){
                 var topicResult = new FinalResultSet(rawLog).translate();
                 // safeguard to update balance, can be removed in the future
                 topicsNeedBalanceUpdate.add(topicResult.topicAddress);
-              
+
                 await db.Topics.findAndModify({address: topicResult.topicAddress}, [['_id','desc']], {$set: {resultIdx: topicResult.resultIdx, status:'WITHDRAW'}}, {});
                 resolve();
               } catch(err) {
-                console.error(err.message);
+                console.error(`Error: ${err.message}`);
                 resolve();
                 return;
               }
