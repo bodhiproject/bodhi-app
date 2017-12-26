@@ -1,6 +1,6 @@
 {
-  "name": "bodhi-api",
-  "version": "1.0.0",
+  "name": "bodhi-graphql",
+  "version": "0.1.0",
   "description": "",
   "main": "index.js",
   "scripts": {
@@ -21,6 +21,7 @@
     "lodash": "^4.17.4",
     "mongodb": "^2.2.33",
     "pg": "^7.4.0",
+    "qweb3": "^0.1.0",
     "subscriptions-transport-ws": "^0.9.1"
   }
 }

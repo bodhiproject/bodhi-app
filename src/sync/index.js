@@ -2,7 +2,7 @@ const resolvers = require('../schema/resolvers');
 const _ = require('lodash');
 const connectDB = require('../db')
 
-const Qweb3 = require('../qweb3.js/src/qweb3');
+const Qweb3 = require('qweb3');
 const qclient = new Qweb3('http://bodhi:bodhi@localhost:13889');
 
 const Topic = require('./models/topic');
@@ -509,7 +509,7 @@ function updateTopicBalance(topicAddress, db, resolve){
 
 const startSync = async () => {
   const mongoDB = await connectDB();
-  await sync(mongoDB)
+  sync(mongoDB)
 };
 
 module.exports = startSync;

@@ -1,6 +1,6 @@
 const _ = require('lodash');
-const qDecoder = require('../../qweb3.js/src/decoder');
-const utils = require('../../qweb3.js/src/utils');
+const qDecoder = require('qweb3/src/decoder');
+const utils = require('qweb3/src/utils');
 
 class Topic {
   constructor(blockNum, txid, rawLog) {

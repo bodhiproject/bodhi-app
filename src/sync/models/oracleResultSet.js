@@ -1,5 +1,4 @@
 const _ = require('lodash');
-const utils = require('../../qweb3.js/src/utils');
 
 class OracleResultSet {
   constructor(rawLog) {
