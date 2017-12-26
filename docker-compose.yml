@@ -1,0 +1,46 @@
+version: '3.4'
+services:
+  sync:
+    build: sync/.
+    depends_on:
+      - mongo
+      - qtumd
+    ports:
+      - 5555:5555
+    command: ["./wait-for-it.sh", "mongo:27017", "qtumd:13889", "--", "node", "index.js"]
+
+  mongo:
+    image: mongo:3.6.0
+    environment:
+      - MONGO_DATA_DIR=/data/db
+      - MONGO_LOG_DIR=/dev/null
+    volumes:
+      - ./data/db:/data/db
+    ports:
+      - 27017:27017
+    command: mongod --smallfiles --logpath=/dev/null # --quiet
+
+  qtumd:
+    image: qtum/qtum:0.14.12
+    volumes:
+      - ./data/qtum:/home/qtum/.qtum
+    ports:
+      - 13889:13889
+    command: bash -c "mkdir -p /home/qtum/.qtum && qtumd -testnet -rpcallowip=::/24 -logevents -datadir=/home/qtum/.qtum -rpcuser=bodhi -rpcpassword=bodhi"
+
+  api:
+    build: api/.
+    depends_on:
+      - qtumd
+    ports:
+      - 8080:8080
+    command: ["./wait-for-it.sh", "qtumd:13889", "--", "npm", "start"]
+
+  ui:
+    build: ui/.
+    depends_on:
+      - sync
+      - api
+    ports:
+      - 3000:3000
+    command: ["./wait-for-it.sh", "sync:5555", "api:8080", "--", "yarn", "start"]
