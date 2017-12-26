@@ -226,6 +226,7 @@ async function sync(db){
           if(rawLog['_eventName'] === 'OracleResultVoted'){
             var insertVoteDB = new Promise(async (resolve) =>{
               var vote = new Vote(blockNum, txid, rawLog).translate();
+              oraclesNeedBalanceUpdate.add(vote.oracleAddress);
               try {
                 await db.Votes.insert(vote);
                 resolve();
