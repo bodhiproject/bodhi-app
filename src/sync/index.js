@@ -3,7 +3,10 @@ const _ = require('lodash');
 const connectDB = require('../db')
 
 const Qweb3 = require('qweb3');
-const qclient = new Qweb3('http://bodhi:bodhi@localhost:13889');
+const Qweb3Contract = require('qweb3/src/contract');
+const QTUM_RPC_ADDRESS = 'http://bodhi:bodhi@localhost:13889';
+const qclient = new Qweb3(QTUM_RPC_ADDRESS);
+
 
 const Topic = require('./models/topic');
 const CentralizedOracle = require('./models/centralizedOracle');
@@ -19,6 +22,8 @@ const batchSize=500;
 const contractDeployedBlockNum = 56958;
 
 const senderAddress = 'qKjn4fStBaAtwGiwueJf9qFxgpbAvf1xAy'; // hardcode sender address as it doesnt matter
+
+const RPC_BATCH_SIZE = 32;
 
 var currentBlockChainHeight = 0
 
@@ -403,111 +408,126 @@ async function sync(db){
     });
 }
 
-function updateOraclesPassedEndBlock(currentBlockChainHeight, db, resolve){
+async function updateOraclesPassedEndBlock(currentBlockChainHeight, db, resolve){
   // all central & decentral oracles with VOTING status and endBlock less than currentBlockChainHeight
-  db.Oracles.findAndModify({endBlock: {$lt:currentBlockChainHeight}, status: 'VOTING'}, [],
-    {$set: {status:'WAITRESULT'}}, {}, function(err, object) {
-    if (err){
-      console.error(`Error: ${err.message}`); // returns error if no matching object found
-    }
+  try {
+    await db.Oracles.findAndModify({endBlock: {$lt:currentBlockChainHeight}, status: 'VOTING'}, [], {$set: {status:'WAITRESULT'}}, {});
     console.log('Update Oracles Passed EndBlock done');
     resolve();
-  });
+  }catch(err){
+    console.error(`Error: updateOraclesPassedEndBlock ${err.message}`);
+    resolve();
+  }
 }
 
-function updateCentralizedOraclesPassedResultSetEndBlock(currentBlockChainHeight, db, resolve){
+async function updateCentralizedOraclesPassedResultSetEndBlock(currentBlockChainHeight, db, resolve){
   // central oracels with WAITRESULT status and resultSetEndBlock less than  currentBlockChainHeight
-  db.Oracles.findAndModify({resultSetEndBlock: {$lt: currentBlockChainHeight}, token: 'QTUM', status: 'WAITRESULT'}, [],
-    {$set: {status:'OPENRESULTSET'}}, {}, function(err, object){
-      if (err){
-        console.error(`Error: ${err.message}`);
-      }
-      console.log('Update Oracles Passed ResultSetEndBlock done');
-      resolve();
-    });
+  try {
+    await db.Oracles.findAndModify({resultSetEndBlock: {$lt: currentBlockChainHeight}, token: 'QTUM', status: 'WAITRESULT'}, [],
+      {$set: {status:'OPENRESULTSET'}}, {});
+    console.log('Update COracles Passed ResultSetEndBlock done');
+    resolve();
+  }catch(err){
+    console.error(`Error: updateCentralizedOraclesPassedResultSetEndBlock ${err.message}`);
+    resolve();
+  }
 }
 
-function updateOracleBalance(oracleAddress, topicSet, db, resolve){
-  db.Oracles.findOne({address: oracleAddress}).then(function(oracle){
-    if(!oracle){
+async function updateOracleBalance(oracleAddress, topicSet, db, resolve){
+  var oracle;
+  try {
+    oracle = await db.Oracles.findOne({address: oracleAddress});
+    if (!oracle){
+      console.error(`Error: find 0 oracle ${oracleAddress} in db to update`);
       resolve();
       return;
     }
-    // related topic should be updated
-    topicSet.add(oracle.topicAddress);
-    if(oracle.token === 'QTUM'){
-      // centrailized
-      const contract = qclient.Contract(oracleAddress, Contracts.CentralizedOracle.abi);
-      contract.call('getTotalBets',{ methodArgs: [], senderAddress: senderAddress})
-        .then(
-          (value)=>{
-            let balances = _.map(value[0].slice(0, oracle.options.length), (balance_BN) =>{
-              return balance_BN.toJSON();
-            });
-            db.Oracles.updateOne({address: oracleAddress}, { $set: { amounts: balances } }, function(err, res){
-              if(err){
-                console.error(`Error: ${err.message}`);
-              }
-              resolve();
-            });
-          }
-        );
-    }else{
-      // decentralized
-      const contract = qclient.Contract(oracleAddress, Contracts.DecentralizedOracle.abi);
-      contract.call('getTotalVotes', { methodArgs: [], senderAddress: senderAddress})
-      .then(
-        (value)=>{
-          let balances = _.map(value[0].slice(0, oracle.options.length), (balance_BN) =>{
-            return balance_BN.toJSON();
-          });
-          db.Oracles.updateOne({address: oracleAddress}, { $set: { amounts: balances } }, function(err, res){
-            if(err){
-              console.error(`Error: ${err.message}`);
-            }
-            resolve();
-          });
-        }
-      );
-    }
-  });
-}
+  } catch(err){
+    console.error(`Error: update oracle ${oracleAddress} in db, ${err.message}`);
+    resolve();
+    return;
+  }
 
-function updateTopicBalance(topicAddress, db, resolve){
-  db.Topics.findOne({address: topicAddress}).then(function(topic){
-    if(!topic){
+  // related topic should be updated
+  topicSet.add(oracle.topicAddress);
+  var value;
+  if(oracle.token === 'QTUM'){
+    // centrailized
+    const contract = new Qweb3Contract(QTUM_RPC_ADDRESS, oracleAddress, Contracts.CentralizedOracle.abi);
+    try {
+      value = await contract.call('getTotalBets',{ methodArgs: [], senderAddress: senderAddress});
+    } catch(err){
+      console.error(`Error: getTotalBets for oracle ${oracleAddress}, ${err.message}`);
       resolve();
       return;
     }
-    const contract = qclient.Contract(topicAddress, Contracts.TopicEvent.abi);
-    contract.call('getTotalBets', { methodArgs: [], senderAddress: senderAddress})
-      .then(
-        (value)=>{
-          let balances = _.map(value[0].slice(0, topic.options.length), (balance_BN) =>{
-            return balance_BN.toJSON();
-          });
-          db.Topics.updateOne({address: topicAddress}, { $set: { qtumAmount: balances } }, function(err, res){
-            if(err){
-              console.error(`Error: ${err.message}`);
-            }
-            resolve();
-          });
-      });
+  }else{
+    // decentralized
+    const contract = new Qweb3Contract(QTUM_RPC_ADDRESS, oracleAddress, Contracts.DecentralizedOracle.abi);
+    try {
+      value = await contract.call('getTotalVotes', { methodArgs: [], senderAddress: senderAddress});
+    } catch(err){
+      console.error(`Error: getTotalVotes for oracle ${oracleAddress}, ${err.message}`);
+      resolve();
+      return;
+    }
+  }
 
-    contract.call('getTotalVotes', { methodArgs: [], senderAddress: senderAddress})
-      .then(
-        (value)=>{
-          let balances = _.map(value[0].slice(0, topic.options.length), (balance_BN) =>{
-            return balance_BN.toJSON();
-          });
-          db.Topics.updateOne({address: topicAddress}, { $set: { botAmount: balances } }, function(err, res){
-            if(err){
-              console.error(`Error: ${err.message}`);
-            }
-            resolve();
-          });
-      });
+  let balances = _.map(value[0].slice(0, oracle.options.length), (balance_BN) => {
+    return balance_BN.toJSON();
   });
+
+  try {
+    await db.Oracles.updateOne({address: oracleAddress}, { $set: { amounts: balances }});
+    resolve();
+  } catch(err){
+    console.error(`Error: update oracle ${oracleAddress}, ${err.message}`);
+    resolve();
+  }
+}
+
+async function updateTopicBalance(topicAddress, db, resolve){
+  var topic;
+  try{
+    topic = await db.Topics.findOne({address: topicAddress});
+    if (!topic){
+      console.error(`Error: find 0 topic ${topicAddress} in db to update`);
+      resolve();
+      return;
+    }
+  } catch(err){
+    console.error(`Error: find topic ${topicAddress} in db, ${err.message}`);
+    resolve();
+    return;
+  }
+
+  const contract = new Qweb3Contract(QTUM_RPC_ADDRESS, topicAddress, Contracts.TopicEvent.abi);
+  var totalBetsValue, totalVotesValue;
+  try{
+    // TODO(frankobe): mk this two async
+    totalBetsValue = await contract.call('getTotalBets', { methodArgs: [], senderAddress: senderAddress});
+    totalVotesValue = await contract.call('getTotalVotes', { methodArgs: [], senderAddress: senderAddress});
+  }catch(err){
+    console.error(`Error: getTotalBets for topic ${topicAddress}, ${err.message}`);
+    resolve();
+    return;
+  }
+
+  let totalBetsBalances = _.map(totalBetsValue[0].slice(0, topic.options.length), (balance_BN) =>{
+    return balance_BN.toJSON();
+  });
+
+  let totalVotesBalances = _.map(totalVotesValue[0].slice(0, topic.options.length), (balance_BN) =>{
+    return balance_BN.toJSON();
+  });
+
+  try {
+    await db.Topics.updateOne({address: topicAddress}, { $set: { qtumAmount: totalBetsBalances, botAmount: totalVotesBalances }});
+    resolve();
+  }catch(err){
+    console.error(`Error: update topic ${topicAddress} in db, ${err.message}`);
+    resolve();
+  }
 }
 
 const startSync = async () => {
