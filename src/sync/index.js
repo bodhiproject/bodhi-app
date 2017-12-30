@@ -1,4 +1,3 @@
-const resolvers = require('../schema/resolvers');
 const _ = require('lodash');
 const connectDB = require('../db')
 
@@ -23,7 +22,7 @@ const contractDeployedBlockNum = 56958;
 
 const senderAddress = 'qKjn4fStBaAtwGiwueJf9qFxgpbAvf1xAy'; // hardcode sender address as it doesnt matter
 
-const RPC_BATCH_SIZE = 32;
+const RPC_BATCH_SIZE = 20;
 
 var currentBlockChainHeight = 0
 
@@ -370,81 +369,88 @@ async function sync(db){
         });
       });
     });
-  }, function(){
-      let updateOraclesPassedEndBlockPromise = new Promise((resolve) => {
-        updateOraclesPassedEndBlock(currentBlockChainHeight, db, resolve);
-      })
+  },
+  async function(){
+    // let updateOraclesPassedEndBlockPromise = new Promise((resolve) => {
+    //   updateOraclesPassedEndBlock(currentBlockChainHeight, db, resolve);
+    // });
+    // var oraclesNeedBalanceUpdateArray = Array.from(oraclesNeedBalanceUpdate);
+    // let updateOraclePromiseStack = oraclesNeedBalanceUpdateArray.map(async (oracle_address) => {
+    //   await updateOracleBalance(oracle_address, topicsNeedBalanceUpdate, db);
+    // });
 
-      var oraclesNeedBalanceUpdateArray = Array.from(oraclesNeedBalanceUpdate)
-      let promiseStack = oraclesNeedBalanceUpdateArray.map((oracle_address) => {
-        return new Promise((resolve) => {
-          updateOracleBalance(oracle_address, topicsNeedBalanceUpdate, db, resolve);
+    // updateOraclePromiseStack.push(updateOraclesPassedEndBlockPromise);
+    var oracle_address_batches = _.chunk(Array.from(oraclesNeedBalanceUpdate), RPC_BATCH_SIZE);
+    // execute rpc batch by batch
+    sequentialLoop(oracle_address_batches.length, async function(loop) {
+      var iteration = loop.iteration();
+      console.log(`oracle batch: ${iteration}`);
+      await Promise.all(oracle_address_batches[iteration].map(async (oracle_address) => {
+        await updateOracleBalance(oracle_address, topicsNeedBalanceUpdate, db);
+      }));
+
+      // Oracle balance update completed
+      if (iteration === oracle_address_batches.length - 1){
+        // two rpc call per topic balance so batch_size = RPC_BATCH_SIZE/2
+        var topic_address_batches = _.chunk(Array.from(topicsNeedBalanceUpdate), Math.floor(RPC_BATCH_SIZE/2));
+        sequentialLoop(topic_address_batches.length, async function(topicLoop) {
+          var iteration = topicLoop.iteration();
+          console.log(`topic batch: ${iteration}`);
+          await Promise.all(topic_address_batches[iteration].map(async (topic_address) => {
+            await updateTopicBalance(topic_address, db);
+          }));
+          console.log('next topic batch');
+          topicLoop.next();
+        }, function() {
+          console.log('Updated topics balance');
+          loop.next();
         });
-      })
-
-      promiseStack.push(updateOraclesPassedEndBlockPromise);
-
-      Promise.all(promiseStack).then(() => {
-        var topicsNeedBalanceUpdateArray = Array.from(topicsNeedBalanceUpdate)
-        let promiseStack2 = topicsNeedBalanceUpdateArray.map((topic_address) => {
-          return new Promise((resolve) => {
-            updateTopicBalance(topic_address, db, resolve);
-          });
-        })
-
-        let updateOraclesPassedResultSetEndBlockPromise = new Promise((resolve) => {
-          updateCentralizedOraclesPassedResultSetEndBlock(currentBlockChainHeight, db, resolve);
-        })
-
-        promiseStack2.push(updateOraclesPassedResultSetEndBlockPromise);
-        console.log('Update Oracles Balance done');
-        Promise.all(promiseStack2).then(() => {
-          console.log('Update Topic Balance done');
-          db.Connection.close();
-          console.log('sleep');
-          setTimeout(startSync, 5000);
-        });
-      });
+      } else {
+        console.log('next oracle batch');
+        loop.next();
+      }
+    }, async function() {
+      await updateOraclesPassedEndBlock(currentBlockChainHeight, db);
+      // must ensure updateCentralizedOraclesPassedResultSetEndBlock after updateOraclesPassedEndBlock
+      await updateCentralizedOraclesPassedResultSetEndBlock(currentBlockChainHeight, db);
+      await db.Connection.close();
+      console.log('sleep');
+      setTimeout(startSync, 5000);
     });
+  });
 }
 
 async function updateOraclesPassedEndBlock(currentBlockChainHeight, db, resolve){
   // all central & decentral oracles with VOTING status and endBlock less than currentBlockChainHeight
   try {
     await db.Oracles.findAndModify({endBlock: {$lt:currentBlockChainHeight}, status: 'VOTING'}, [], {$set: {status:'WAITRESULT'}}, {});
-    console.log('Update Oracles Passed EndBlock done');
-    resolve();
+    console.log('Updated Oracles Passed EndBlock');
   }catch(err){
     console.error(`Error: updateOraclesPassedEndBlock ${err.message}`);
-    resolve();
   }
 }
 
-async function updateCentralizedOraclesPassedResultSetEndBlock(currentBlockChainHeight, db, resolve){
+async function updateCentralizedOraclesPassedResultSetEndBlock(currentBlockChainHeight, db){
   // central oracels with WAITRESULT status and resultSetEndBlock less than  currentBlockChainHeight
   try {
     await db.Oracles.findAndModify({resultSetEndBlock: {$lt: currentBlockChainHeight}, token: 'QTUM', status: 'WAITRESULT'}, [],
       {$set: {status:'OPENRESULTSET'}}, {});
-    console.log('Update COracles Passed ResultSetEndBlock done');
-    resolve();
+    console.log('Updated COracles Passed ResultSetEndBlock');
   }catch(err){
     console.error(`Error: updateCentralizedOraclesPassedResultSetEndBlock ${err.message}`);
-    resolve();
   }
 }
 
-async function updateOracleBalance(oracleAddress, topicSet, db, resolve){
+async function updateOracleBalance(oracleAddress, topicSet, db){
   var oracle;
   try {
     oracle = await db.Oracles.findOne({address: oracleAddress});
     if (!oracle){
       console.error(`Error: find 0 oracle ${oracleAddress} in db to update`);
-      resolve();
       return;
     }
   } catch(err){
     console.error(`Error: update oracle ${oracleAddress} in db, ${err.message}`);
-    resolve();
     return;
   }
 
@@ -458,7 +464,6 @@ async function updateOracleBalance(oracleAddress, topicSet, db, resolve){
       value = await contract.call('getTotalBets',{ methodArgs: [], senderAddress: senderAddress});
     } catch(err){
       console.error(`Error: getTotalBets for oracle ${oracleAddress}, ${err.message}`);
-      resolve();
       return;
     }
   }else{
@@ -468,7 +473,6 @@ async function updateOracleBalance(oracleAddress, topicSet, db, resolve){
       value = await contract.call('getTotalVotes', { methodArgs: [], senderAddress: senderAddress});
     } catch(err){
       console.error(`Error: getTotalVotes for oracle ${oracleAddress}, ${err.message}`);
-      resolve();
       return;
     }
   }
@@ -479,25 +483,22 @@ async function updateOracleBalance(oracleAddress, topicSet, db, resolve){
 
   try {
     await db.Oracles.updateOne({address: oracleAddress}, { $set: { amounts: balances }});
-    resolve();
+    console.log(`Update oracle ${oracleAddress} amounts ${balances}`);
   } catch(err){
     console.error(`Error: update oracle ${oracleAddress}, ${err.message}`);
-    resolve();
   }
 }
 
-async function updateTopicBalance(topicAddress, db, resolve){
+async function updateTopicBalance(topicAddress, db){
   var topic;
   try{
     topic = await db.Topics.findOne({address: topicAddress});
     if (!topic){
       console.error(`Error: find 0 topic ${topicAddress} in db to update`);
-      resolve();
       return;
     }
   } catch(err){
     console.error(`Error: find topic ${topicAddress} in db, ${err.message}`);
-    resolve();
     return;
   }
 
@@ -509,7 +510,6 @@ async function updateTopicBalance(topicAddress, db, resolve){
     totalVotesValue = await contract.call('getTotalVotes', { methodArgs: [], senderAddress: senderAddress});
   }catch(err){
     console.error(`Error: getTotalBets for topic ${topicAddress}, ${err.message}`);
-    resolve();
     return;
   }
 
@@ -523,10 +523,9 @@ async function updateTopicBalance(topicAddress, db, resolve){
 
   try {
     await db.Topics.updateOne({address: topicAddress}, { $set: { qtumAmount: totalBetsBalances, botAmount: totalVotesBalances }});
-    resolve();
+    console.log(`Update topic ${topicAddress} qtumAmount ${totalBetsBalances} botAmount ${totalVotesBalances}`);
   }catch(err){
     console.error(`Error: update topic ${topicAddress} in db, ${err.message}`);
-    resolve();
   }
 }
 
