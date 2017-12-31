@@ -1,10 +1,9 @@
 const {Logger, MongoClient} = require('mongodb');
 
-
-const MONGO_URL = 'mongodb://localhost:27017/bodhiapi';
+const config = require('../config')
 
 module.exports = async () => {
-  const db = await MongoClient.connect(MONGO_URL);
+  const db = await MongoClient.connect(config.MONGO_URL);
 
   let logCount = 0;
   Logger.setCurrentLogger((msg, stat) => {

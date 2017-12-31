@@ -1,10 +1,10 @@
 const _ = require('lodash');
+const config = require('../config');
 const connectDB = require('../db')
 
 const Qweb3 = require('qweb3');
 const Qweb3Contract = require('qweb3/src/contract');
-const QTUM_RPC_ADDRESS = 'http://bodhi:bodhi@localhost:13889';
-const qclient = new Qweb3(QTUM_RPC_ADDRESS);
+const qclient = new Qweb3(config.QTUM_RPC_ADDRESS);
 
 
 const Topic = require('./models/topic');
@@ -16,7 +16,7 @@ const FinalResultSet = require('./models/finalResultSet');
 
 const Contracts = require('./contracts');
 
-const batchSize=500;
+const batchSize=200;
 
 const contractDeployedBlockNum = 56958;
 
@@ -348,10 +348,10 @@ async function sync(db){
     updatePromises.push(syncFinalResultSetPromise);
 
     Promise.all(syncPromises).then(() => {
-      console.log('synced');
+      console.log('Synced Topics & Oracles');
       // sync first and then update in case update object in current batch
       Promise.all(updatePromises).then(() =>{
-        console.log('updated');
+        console.log('Updated OracleResult & FinalResult');
 
         const updateBlockPromises = [];
         for (var i=startBlock; i<=endBlock; i++) {
@@ -363,7 +363,6 @@ async function sync(db){
         }
 
         Promise.all(updateBlockPromises).then(() => {
-          console.log('next')
           startBlock = endBlock+1;
           loop.next();
         });
@@ -371,15 +370,6 @@ async function sync(db){
     });
   },
   async function(){
-    // let updateOraclesPassedEndBlockPromise = new Promise((resolve) => {
-    //   updateOraclesPassedEndBlock(currentBlockChainHeight, db, resolve);
-    // });
-    // var oraclesNeedBalanceUpdateArray = Array.from(oraclesNeedBalanceUpdate);
-    // let updateOraclePromiseStack = oraclesNeedBalanceUpdateArray.map(async (oracle_address) => {
-    //   await updateOracleBalance(oracle_address, topicsNeedBalanceUpdate, db);
-    // });
-
-    // updateOraclePromiseStack.push(updateOraclesPassedEndBlockPromise);
     var oracle_address_batches = _.chunk(Array.from(oraclesNeedBalanceUpdate), RPC_BATCH_SIZE);
     // execute rpc batch by batch
     sequentialLoop(oracle_address_batches.length, async function(loop) {
@@ -459,7 +449,7 @@ async function updateOracleBalance(oracleAddress, topicSet, db){
   var value;
   if(oracle.token === 'QTUM'){
     // centrailized
-    const contract = new Qweb3Contract(QTUM_RPC_ADDRESS, oracleAddress, Contracts.CentralizedOracle.abi);
+    const contract = new Qweb3Contract(config.QTUM_RPC_ADDRESS, oracleAddress, Contracts.CentralizedOracle.abi);
     try {
       value = await contract.call('getTotalBets',{ methodArgs: [], senderAddress: senderAddress});
     } catch(err){
@@ -468,7 +458,7 @@ async function updateOracleBalance(oracleAddress, topicSet, db){
     }
   }else{
     // decentralized
-    const contract = new Qweb3Contract(QTUM_RPC_ADDRESS, oracleAddress, Contracts.DecentralizedOracle.abi);
+    const contract = new Qweb3Contract(config.QTUM_RPC_ADDRESS, oracleAddress, Contracts.DecentralizedOracle.abi);
     try {
       value = await contract.call('getTotalVotes', { methodArgs: [], senderAddress: senderAddress});
     } catch(err){
@@ -502,7 +492,7 @@ async function updateTopicBalance(topicAddress, db){
     return;
   }
 
-  const contract = new Qweb3Contract(QTUM_RPC_ADDRESS, topicAddress, Contracts.TopicEvent.abi);
+  const contract = new Qweb3Contract(config.QTUM_RPC_ADDRESS, topicAddress, Contracts.TopicEvent.abi);
   var totalBetsValue, totalVotesValue;
   try{
     // TODO(frankobe): mk this two async
