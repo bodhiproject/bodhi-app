@@ -22,7 +22,7 @@
     "lodash": "^4.17.4",
     "mongodb": "^2.2.33",
     "pg": "^7.4.0",
-    "qweb3": "^0.1.2",
+    "qweb3": "^0.2.5",
     "subscriptions-transport-ws": "^0.9.1"
   }
 }
