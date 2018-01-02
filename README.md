@@ -11,5 +11,6 @@
 `git clone https://github.com/bodhiproject/bodhi-app.git`
 
 ### 3. Run command
-Open Terminal, navigate to under the newly cloned folder and run `docker-compose up`. 
-That will execute setup commands we prepared in ./docker-compose.yml and run Bodhi components in order.
+Open Terminal, navigate to under the newly cloned folder and run 
+1. `git submodule update --init --remote` to pull source code of Bodhi components
+2. `docker-compose up` to execute setup commands we prepared in ./docker-compose.yml and start components in order.
