@@ -1,5 +1,5 @@
 const pubsub = require('../pubsub');
-
+const fetch = require('node-fetch');
 
 function buildTopicFilters({OR = [], address, status}) {
   const filter = (address || status) ? {} : null;
@@ -172,6 +172,35 @@ module.exports = {
         cursor.skip(skip);
       }
       return await cursor.toArray();
+    },
+
+    syncInfo: async (root, {}, {mongo: {Blocks}}) => {
+      let options = {
+        "limit": 1,
+        "sort": [["blockNum", 'desc']]
+      }
+      let syncBlockNum = null;
+      let blocks;
+      try {
+        blocks = await Blocks.find({}, options).toArray();
+      } catch(err){
+        console.error(`Error query latest block from db: ${err.message}`);
+      }
+
+      if(blocks.length > 0){
+        syncBlockNum = blocks[0].blockNum;
+      }
+
+      let chainBlockNum = null;
+      try {
+       let resp = await fetch('https://testnet.qtum.org/insight-api/status?q=getInfo');
+       let json = await resp.json();
+       chainBlockNum = json['info']['blocks'];
+      } catch(err) {
+        console.error(`Error GET https://testnet.qtum.org/insight-api/status?q=getInfo: ${err.message}`);
+      }
+
+      return {'syncBlockNum': syncBlockNum, 'chainBlockNum': chainBlockNum }
     }
   },
 

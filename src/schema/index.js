@@ -52,12 +52,18 @@ type Block {
   blockNum: Int!
 }
 
+type syncInfo {
+  syncBlockNum: Int
+  chainBlockNum: Int
+}
+
 type Query {
   allTopics(filter: TopicFilter, skip: Int, first: Int, orderBy:String): [Topic]!
   allOracles(filter: OracleFilter, skip: Int, first: Int, orderBy:String): [Oracle]!
   searchOracles(searchPhrase: String, skip: Int, first: Int, orderBy:String): [Oracle]!
   allVotes(filter: VoteFilter, skip: Int, first: Int, orderBy:String): [Vote]!
   allBlocks(filter: VoteFilter, skip: Int, first: Int, orderBy:String): [Block]!
+  syncInfo: syncInfo!
 }
 
 input TopicFilter {

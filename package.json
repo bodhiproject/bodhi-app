@@ -21,6 +21,7 @@
     "i": "^0.3.6",
     "lodash": "^4.17.4",
     "mongodb": "^2.2.33",
+    "node-fetch": "^1.7.3",
     "pg": "^7.4.0",
     "qweb3": "^0.2.5",
     "subscriptions-transport-ws": "^0.9.1"
