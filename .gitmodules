@@ -1,9 +1,12 @@
 [submodule "sync"]
 	path = sync
 	url = https://github.com/bodhiproject/bodhi-graphql.git
+	branch = docker
 [submodule "api"]
 	path = api
 	url = https://github.com/bodhiproject/bodhi-api.git
+	branch = docker
 [submodule "ui"]
 	path = ui
 	url = https://github.com/bodhiproject/bodhi-ui.git
+	branch = docker
