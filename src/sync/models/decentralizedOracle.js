@@ -1,5 +1,5 @@
 const _ = require('lodash');
-const utils = require('qweb3/src/utils');
+const Utils = require('qweb3').Utils;
 
 class DecentralizedOracle {
   constructor(blockNum, txid, rawLog) {
@@ -16,8 +16,8 @@ class DecentralizedOracle {
     let nameHex = _.reduce(this.rawLog['_name'], (hexStr, value) => {
       return hexStr += value;
     }, '');
-    this.name = utils.toUtf8(nameHex);
-    let intermedia = _.map(this.rawLog['_resultNames'], (item) => utils.toUtf8(item));
+    this.name = Utils.toUtf8(nameHex);
+    let intermedia = _.map(this.rawLog['_resultNames'], (item) => Utils.toUtf8(item));
     this.resultNames = _.filter(intermedia, item => !!item);
 
     this.contractAddress = this.rawLog['_contractAddress'];

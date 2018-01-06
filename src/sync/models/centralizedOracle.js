@@ -1,6 +1,6 @@
 const _ = require('lodash');
-const qDecoder = require('qweb3/src/decoder');
-const utils = require('qweb3/src/utils');
+const Decoder = require('qweb3').Decoder;
+const Utils = require('qweb3').Utils;
 
 class CentralizedOracle {
   constructor(blockNum, txid, rawLog) {
@@ -17,9 +17,9 @@ class CentralizedOracle {
     let nameHex = _.reduce(this.rawLog['_name'], (hexStr, value) => {
       return hexStr += value;
     }, '');
-    this.name = utils.toUtf8(nameHex);
+    this.name = Utils.toUtf8(nameHex);
 
-    let intermedia = _.map(this.rawLog['_resultNames'], (item) => utils.toUtf8(item));
+    let intermedia = _.map(this.rawLog['_resultNames'], (item) => Utils.toUtf8(item));
     this.resultNames = _.filter(intermedia, item => !!item);
 
     this.contractAddress = this.rawLog['_contractAddress'];
@@ -37,7 +37,7 @@ class CentralizedOracle {
       txid: this.txid,
       topicAddress:this.eventAddress,
       resultSetterAddress:this.oracle,
-      resultSetterQAddress: qDecoder.toQtumAddress(this.oracle),
+      resultSetterQAddress: Decoder.toQtumAddress(this.oracle),
       status: 'VOTING',
       token: 'QTUM',
       name: this.name,

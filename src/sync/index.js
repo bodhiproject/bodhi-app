@@ -1,11 +1,11 @@
 const _ = require('lodash');
+const Qweb3 = require('qweb3').default;
+const Contract = require('qweb3').Contract;
+
 const config = require('../config');
 const connectDB = require('../db')
 
-const Qweb3 = require('qweb3');
-const Qweb3Contract = require('qweb3/src/contract');
 const qclient = new Qweb3(config.QTUM_RPC_ADDRESS);
-
 
 const Topic = require('./models/topic');
 const CentralizedOracle = require('./models/centralizedOracle');
@@ -16,7 +16,7 @@ const FinalResultSet = require('./models/finalResultSet');
 
 const Contracts = require('./contracts');
 
-const batchSize=200;
+const batchSize = 200;
 
 const contractDeployedBlockNum = 56958;
 
@@ -449,7 +449,7 @@ async function updateOracleBalance(oracleAddress, topicSet, db){
   var value;
   if(oracle.token === 'QTUM'){
     // centrailized
-    const contract = new Qweb3Contract(config.QTUM_RPC_ADDRESS, oracleAddress, Contracts.CentralizedOracle.abi);
+    const contract = new Contract(config.QTUM_RPC_ADDRESS, oracleAddress, Contracts.CentralizedOracle.abi);
     try {
       value = await contract.call('getTotalBets',{ methodArgs: [], senderAddress: senderAddress});
     } catch(err){
@@ -458,7 +458,7 @@ async function updateOracleBalance(oracleAddress, topicSet, db){
     }
   }else{
     // decentralized
-    const contract = new Qweb3Contract(config.QTUM_RPC_ADDRESS, oracleAddress, Contracts.DecentralizedOracle.abi);
+    const contract = new Contract(config.QTUM_RPC_ADDRESS, oracleAddress, Contracts.DecentralizedOracle.abi);
     try {
       value = await contract.call('getTotalVotes', { methodArgs: [], senderAddress: senderAddress});
     } catch(err){
@@ -492,7 +492,7 @@ async function updateTopicBalance(topicAddress, db){
     return;
   }
 
-  const contract = new Qweb3Contract(config.QTUM_RPC_ADDRESS, topicAddress, Contracts.TopicEvent.abi);
+  const contract = new Contract(config.QTUM_RPC_ADDRESS, topicAddress, Contracts.TopicEvent.abi);
   var totalBetsValue, totalVotesValue;
   try{
     // TODO(frankobe): mk this two async

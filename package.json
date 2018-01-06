@@ -4,6 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
+    "start": "node src/index.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],
@@ -23,7 +24,7 @@
     "mongodb": "^2.2.33",
     "node-fetch": "^1.7.3",
     "pg": "^7.4.0",
-    "qweb3": "^0.2.5",
+    "qweb3": "^0.2.6",
     "subscriptions-transport-ws": "^0.9.1"
   }
 }
