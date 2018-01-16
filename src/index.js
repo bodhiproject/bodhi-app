@@ -10,7 +10,6 @@ const {graphqlExpress, graphiqlExpress} = require('apollo-server-express');
 
 const schema = require('./schema');
 
-// const connectDB = require('./db');
 const connectDB = require('./db/nedb');
 const startSync = require('./sync')
 

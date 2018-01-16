@@ -21,6 +21,7 @@ class Vote {
 
   translate() {
     return {
+      _id: this.txid,
       txid: this.txid,
       voterAddress: this.participant,
       voterQAddress: Decoder.toQtumAddress(this.participant),

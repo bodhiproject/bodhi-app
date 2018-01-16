@@ -33,6 +33,7 @@ class DecentralizedOracle {
     optionIdxs.splice(this.lastResultIndex, 1);
 
     return {
+      _id: this.contractAddress,
       address: this.contractAddress,
       txid: this.txid,
       topicAddress:this.eventAddress,

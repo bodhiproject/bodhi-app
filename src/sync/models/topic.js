@@ -30,6 +30,7 @@ class Topic {
 
   translate() {
     return {
+      _id: this.topicAddress,
       address: this.topicAddress,
       txid: this.txid,
       creatorAddress: this.creator,
