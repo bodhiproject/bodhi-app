@@ -4,11 +4,11 @@ const fetch = require('node-fetch');
 function buildTopicFilters({OR = [], address, status}) {
   const filter = (address || status) ? {} : null;
   if (address) {
-    filter.address = {$eq: `${address}`};
+    filter.address = address;
   }
 
   if (status) {
-    filter.status = {$eq: `${status}`};
+    filter.status = status;
   }
 
   let filters = filter ? [filter] : [];
@@ -21,19 +21,19 @@ function buildTopicFilters({OR = [], address, status}) {
 function buildOracleFilters({OR = [], address, topicAddress, resultSetterQAddress, status}) {
   const filter = (address || topicAddress || status) ? {}: null;
   if(address) {
-    filter.address = {$eq: `${address}`};
+    filter.address = address;
   }
 
   if (topicAddress) {
-    filter.topicAddress = {$eq: `${topicAddress}`};
+    filter.topicAddress = topicAddress;
   }
 
   if(resultSetterQAddress){
-    filter.resultSetterQAddress = {$eq: `${resultSetterQAddress}`};
+    filter.resultSetterQAddress = resultSetterQAddress;
   }
 
   if(status) {
-    filter.status = {$eq: `${status}`};
+    filter.status = status;
   }
 
   let filters = filter ? [filter]:[]
@@ -62,23 +62,23 @@ function buildSearchOracleFilter(searchPhrase) {
 function buildVoteFilters({OR = [], address, oracleAddress, voterAddress, voterQAddress, optionIdx}) {
   const filter = (address || oracleAddress || voterAddress || optionIdx) ? {} : null;
   if (address) {
-    filter.address = {$eq: `${address}`};
+    filter.address = address;
   }
 
   if (oracleAddress) {
-    filter.oracleAddress = {$eq: `${oracleAddress}`};
+    filter.oracleAddress = oracleAddress;
   }
 
   if (voterAddress) {
-    filter.voterAddress = {$eq: `${voterAddress}`};
+    filter.voterAddress = voterAddress;
   }
 
   if (voterQAddress) {
-    filter.voterQAddress = {$eq: `${voterQAddress}`};
+    filter.voterQAddress = voterQAddress;
   }
 
   if (optionIdx) {
-    filter.optionIdx = {$eq: `${optionIdx}`};
+    filter.optionIdx = optionIdx;
   }
 
   let filters = filter ? [filter]: [];
@@ -88,29 +88,12 @@ function buildVoteFilters({OR = [], address, oracleAddress, voterAddress, voterQ
   return filters;
 }
 
-function buildBlockFilters({OR = [], hash, blockNum}){
-  const filter  =(hash || blockNum) ? {}: null;
-  if (hash) {
-    filter.hash = {$eq: `${hash}`};
-  }
-
-  if (blockNum) {
-    filter.blockNum = {$eq: `${blockNum}`};
-  }
-
-  let filters = filter ? [filter]: [];
-  for (let i = 0; i < OR.length; i++) {
-    filters = filters.concat(buildBlockFilters(OR[i]));
-  }
-  return filters;
-}
-
 
 module.exports = {
   Query: {
-    allTopics: async (root, {filter, first, skip, orderBy}, {mongo: {Topics}}) => {
+    allTopics: async (root, {filter, first, skip, orderBy}, {db: {Topics}}) => {
       let query = filter ? {$or: buildTopicFilters(filter)}: {};
-      const cursor = Topics.find(query);
+      const cursor = Topics.cfind(query);
       if (first) {
         cursor.limit(first);
       }
@@ -119,12 +102,12 @@ module.exports = {
         cursor.skip(skip);
       }
 
-      return await cursor.toArray();
+      return await cursor.exec();
     },
 
-    allOracles: async (root, {filter, first, skip, orderBy}, {mongo: {Oracles}}) => {
+    allOracles: async (root, {filter, first, skip, orderBy}, {db: {Oracles}}) => {
       let query = filter ? {$or: buildOracleFilters(filter)}: {};
-      const cursor = Oracles.find(query);
+      const cursor = Oracles.cfind(query);
       if (first) {
         cursor.limit(first);
       }
@@ -132,12 +115,12 @@ module.exports = {
       if (skip) {
         cursor.skip(skip);
       }
-      return await cursor.toArray();
+      return await cursor.exec();
     },
 
-    searchOracles: async (root, {searchPhrase, first, skip, orderBy}, {mongo: {Oracles}}) => {
+    searchOracles: async (root, {searchPhrase, first, skip, orderBy}, {db: {Oracles}}) => {
       let query = searchPhrase ? {$or: buildSearchOracleFilter(searchPhrase)}: {};
-      const cursor = Oracles.find(query);
+      const cursor = Oracles.cfind(query);
       if (first) {
         cursor.limit(first);
       }
@@ -145,12 +128,12 @@ module.exports = {
       if (skip) {
         cursor.skip(skip);
       }
-      return await cursor.toArray();
+      return await cursor.exec();
     },
 
-    allVotes: async (root, {filter, first, skip, orderBy}, {mongo: {Votes}}) => {
+    allVotes: async (root, {filter, first, skip, orderBy}, {db: {Votes}}) => {
       let query = filter ? {$or: buildVoteFilters(filter)}: {};
-      const cursor = Votes.find(query);
+      const cursor = Votes.cfind(query);
       if (first) {
         cursor.limit(first);
       }
@@ -158,12 +141,12 @@ module.exports = {
       if (skip) {
         cursor.skip(skip);
       }
-      return await cursor.toArray();
+      return await cursor.exec();
     },
 
-    allBlocks: async (root, {filter, first, skip, orderBy}, {mongo: {Blocks}}) => {
+    allBlocks: async (root, {filter, first, skip, orderBy}, {db: {Blocks}}) => {
       let query = filter ? {$or: buildBlockFilters(filter)}: {};
-      const cursor = Blocks.find(query);
+      const cursor = Blocks.cfind(query);
       if (first) {
         cursor.limit(first);
       }
@@ -171,18 +154,14 @@ module.exports = {
       if (skip) {
         cursor.skip(skip);
       }
-      return await cursor.toArray();
+      return await cursor.exec();
     },
 
-    syncInfo: async (root, {}, {mongo: {Blocks}}) => {
-      let options = {
-        "limit": 1,
-        "sort": [["blockNum", 'desc']]
-      }
+    syncInfo: async (root, {}, {db: {Blocks}}) => {
       let syncBlockNum = null;
       let blocks;
       try {
-        blocks = await Blocks.find({}, options).toArray();
+        blocks = await Blocks.cfind({}).sort({blockNum:-1}).limit(1).exec();
       } catch(err){
         console.error(`Error query latest block from db: ${err.message}`);
       }
@@ -205,7 +184,7 @@ module.exports = {
   },
 
   Mutation: {
-    createTopic: async (root, data, {mongo: {Topics}}) => {
+    createTopic: async (root, data, {db: {Topics}}) => {
       data.status = 'CREATED';
       data.qtumAmount = Array(data.options.length).fill(0);
       data.botAmount = Array(data.options.length).fill(0);
@@ -217,7 +196,7 @@ module.exports = {
       return newTopic;
     },
 
-    createOracle: async (root, data, {mongo: {Oracles}}) => {
+    createOracle: async (root, data, {db: {Oracles}}) => {
       data.status = 'CREATED';
       data.amounts = Array(data.options.length).fill(0);
 
@@ -227,15 +206,15 @@ module.exports = {
       return newOracle;
     },
 
-    createVote: async (root, data, {mongo: {Votes}}) => {
+    createVote: async (root, data, {db: {Votes}}) => {
       const response = await Votes.insert(data);
       return Object.assign({id: response.insertedIds[0]}, data);
     }
   },
 
   Topic: {
-    oracles: async ({address}, data, {mongo: {Oracles}}) => {
-      return await Oracles.find({topicAddress: address}).toArray();
+    oracles: async ({address}, data, {db: {Oracles}}) => {
+      return await Oracles.find({topicAddress: address});
     }
   },
 

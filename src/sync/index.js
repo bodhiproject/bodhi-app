@@ -3,7 +3,7 @@ const Qweb3 = require('qweb3').default;
 const Contract = require('qweb3').Contract;
 
 const config = require('../config');
-const connectDB = require('../db')
+const connectDB = require('../db/nedb')
 
 const qclient = new Qweb3(config.QTUM_RPC_ADDRESS);
 
@@ -74,9 +74,9 @@ async function sync(db){
   }
 
   var startBlock = contractDeployedBlockNum;
-  let blocks = await db.Blocks.find({}, options).toArray();
-  if(blocks.length > 0){
-    startBlock = Math.max(blocks[0].blockNum + 1, startBlock);
+  let block = await db.Blocks.cfind({}).sort({blockNum:-1}).limit(1).exec();
+  if(block.length > 0){
+    startBlock = Math.max(block.blockNum + 1, startBlock);
   }
 
   var initialSync = sequentialLoop(Math.ceil((currentBlockChainHeight-startBlock)/batchSize), function(loop){
@@ -276,7 +276,7 @@ async function sync(db){
                 // safeguard to update balance, can be removed in the future
                 oraclesNeedBalanceUpdate.add(oracleResult.oracleAddress);
 
-                await db.Oracles.findAndModify({address: oracleResult.oracleAddress}, [['_id','desc']], {$set: {resultIdx: oracleResult.resultIdx, status:'PENDING'}}, {});
+                await db.Oracles.update({address: oracleResult.oracleAddress}, {$set: {resultIdx: oracleResult.resultIdx, status:'PENDING'}}, {});
                 resolve();
               } catch(err) {
                 console.error(`Error: ${err.message}`);
@@ -319,7 +319,7 @@ async function sync(db){
                 // safeguard to update balance, can be removed in the future
                 topicsNeedBalanceUpdate.add(topicResult.topicAddress);
 
-                await db.Topics.findAndModify({address: topicResult.topicAddress}, [['_id','desc']], {$set: {resultIdx: topicResult.resultIdx, status:'WITHDRAW'}}, {});
+                await db.Topics.update({address: topicResult.topicAddress}, {$set: {resultIdx: topicResult.resultIdx, status:'WITHDRAW'}}, {});
                 resolve();
               } catch(err) {
                 console.error(`Error: ${err.message}`);
@@ -403,7 +403,9 @@ async function sync(db){
       await updateOraclesPassedEndBlock(currentBlockChainHeight, db);
       // must ensure updateCentralizedOraclesPassedResultSetEndBlock after updateOraclesPassedEndBlock
       await updateCentralizedOraclesPassedResultSetEndBlock(currentBlockChainHeight, db);
-      await db.Connection.close();
+
+      // nedb doesnt require close db, leave the comment as a reminder
+      // await db.Connection.close();
       console.log('sleep');
       setTimeout(startSync, 5000);
     });
@@ -413,7 +415,7 @@ async function sync(db){
 async function updateOraclesPassedEndBlock(currentBlockChainHeight, db, resolve){
   // all central & decentral oracles with VOTING status and endBlock less than currentBlockChainHeight
   try {
-    await db.Oracles.findAndModify({endBlock: {$lt:currentBlockChainHeight}, status: 'VOTING'}, [], {$set: {status:'WAITRESULT'}}, {});
+    await db.Oracles.update({endBlock: {$lt:currentBlockChainHeight}, status: 'VOTING'}, {$set: {status:'WAITRESULT'}}, {multi: true});
     console.log('Updated Oracles Passed EndBlock');
   }catch(err){
     console.error(`Error: updateOraclesPassedEndBlock ${err.message}`);
@@ -423,8 +425,8 @@ async function updateOraclesPassedEndBlock(currentBlockChainHeight, db, resolve)
 async function updateCentralizedOraclesPassedResultSetEndBlock(currentBlockChainHeight, db){
   // central oracels with WAITRESULT status and resultSetEndBlock less than  currentBlockChainHeight
   try {
-    await db.Oracles.findAndModify({resultSetEndBlock: {$lt: currentBlockChainHeight}, token: 'QTUM', status: 'WAITRESULT'}, [],
-      {$set: {status:'OPENRESULTSET'}}, {});
+    await db.Oracles.update({resultSetEndBlock: {$lt: currentBlockChainHeight}, token: 'QTUM', status: 'WAITRESULT'},
+      {$set: {status:'OPENRESULTSET'}}, {multi: true});
     console.log('Updated COracles Passed ResultSetEndBlock');
   }catch(err){
     console.error(`Error: updateCentralizedOraclesPassedResultSetEndBlock ${err.message}`);
@@ -472,7 +474,7 @@ async function updateOracleBalance(oracleAddress, topicSet, db){
   });
 
   try {
-    await db.Oracles.updateOne({address: oracleAddress}, { $set: { amounts: balances }});
+    await db.Oracles.update({address: oracleAddress}, { $set: { amounts: balances }});
     console.log(`Update oracle ${oracleAddress} amounts ${balances}`);
   } catch(err){
     console.error(`Error: update oracle ${oracleAddress}, ${err.message}`);
@@ -512,7 +514,7 @@ async function updateTopicBalance(topicAddress, db){
   });
 
   try {
-    await db.Topics.updateOne({address: topicAddress}, { $set: { qtumAmount: totalBetsBalances, botAmount: totalVotesBalances }});
+    await db.Topics.update({address: topicAddress}, { $set: { qtumAmount: totalBetsBalances, botAmount: totalVotesBalances }});
     console.log(`Update topic ${topicAddress} qtumAmount ${totalBetsBalances} botAmount ${totalVotesBalances}`);
   }catch(err){
     console.error(`Error: update topic ${topicAddress} in db, ${err.message}`);
@@ -520,8 +522,8 @@ async function updateTopicBalance(topicAddress, db){
 }
 
 const startSync = async () => {
-  const mongoDB = await connectDB();
-  sync(mongoDB)
+  const db = await connectDB();
+  sync(db)
 };
 
 module.exports = startSync;

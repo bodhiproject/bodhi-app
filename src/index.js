@@ -10,7 +10,8 @@ const {graphqlExpress, graphiqlExpress} = require('apollo-server-express');
 
 const schema = require('./schema');
 
-const connectDB = require('./db');
+// const connectDB = require('./db');
+const connectDB = require('./db/nedb');
 const startSync = require('./sync')
 
 const {execute, subscribe} = require('graphql');
@@ -19,7 +20,7 @@ const {SubscriptionServer} = require('subscriptions-transport-ws');
 
 const startAPI = async () => {
 
-  const mongo = await connectDB()
+  const db = await connectDB()
   var app = express();
 
   const PORT = 5555;
@@ -27,7 +28,7 @@ const startAPI = async () => {
 
   app.use('/graphql', bodyParser.json(), graphqlExpress({
     context: {
-      mongo
+      db
     },
     schema
   }));
