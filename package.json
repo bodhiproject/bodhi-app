@@ -10,6 +10,7 @@
   "keywords": [],
   "author": "",
   "license": "ISC",
+  "bin": "src/index.js",
   "dependencies": {
     "apollo-server-express": "^1.2.0",
     "body-parser": "^1.18.2",
@@ -21,7 +22,6 @@
     "graphql-tools": "^2.10.0",
     "i": "^0.3.6",
     "lodash": "^4.17.4",
-    "mongodb": "^2.2.33",
     "nedb": "^1.8.0",
     "nedb-promise": "^2.0.1",
     "node-fetch": "^1.7.3",
