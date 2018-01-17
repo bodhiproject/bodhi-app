@@ -27,3 +27,12 @@ app running at `localhost:3000`
 
 
 I will setup everything in docker compose after synchronizer logic
+
+## Package & Release
+1. `npm install -g pkg`
+
+2. In the dir with package.json, run
+
+`pkg . --out-path bin`
+
+3. all executables are in `bin\`

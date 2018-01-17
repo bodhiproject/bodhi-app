@@ -1,5 +1,6 @@
 const express = require('express');
 const cors = require('cors')
+const {spawn} = require('child_process');
 
 // This package automatically parses JSON requests.
 const bodyParser = require('body-parser');
@@ -47,5 +48,23 @@ const startAPI = async () => {
   });
 };
 
-startSync();
-startAPI();
+const qtumprocess = spawn(`./qtum/bin/qtumd`, ['-testnet', '-logevents', '-rpcuser=bodhi', '-rpcpassword=bodhi']);
+
+qtumprocess.stdout.on('data', (data) => {
+  console.log(`stdout: ${data}`);
+});
+
+qtumprocess.stderr.on('data', (data) => {
+  console.log(`stderr: ${data}`);
+});
+
+qtumprocess.on('close', (code) => {
+  console.log(`child process exited with code ${code}`);
+});
+
+// 5s is sufficient for qtumd to start
+setTimeout(function(){
+  startSync();
+  startAPI();
+}, 5000);
+

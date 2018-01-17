@@ -58,3 +58,7 @@ typings/
 .env
 
 *.db
+
+.DS_Store
+
+bin/
