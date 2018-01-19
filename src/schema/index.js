@@ -1,13 +1,13 @@
-const {makeExecutableSchema} = require('graphql-tools');
+const { makeExecutableSchema } = require('graphql-tools');
 const resolvers = require('./resolvers');
 
 // Define your types here.
 const typeDefs = `
+
 type Topic {
+  version: Int!
   address: String!
   txid: String!
-  creatorAddress: String!
-  creatorQAddress: String!
   status: _OracleStatusType!
   name: String!
   options: [String!]!
@@ -19,6 +19,7 @@ type Topic {
 }
 
 type Oracle {
+  version: Int!
   address: String!
   txid: String!
   topicAddress: String!
@@ -32,12 +33,15 @@ type Oracle {
   amounts: [String!]!
   resultIdx: Int
   blockNum: Int!
+  startBlock: Int!
   endBlock: Int!
-  resultSetEndBlock: Int,
+  resultSetStartBlock: Int
+  resultSetEndBlock: Int
   consensusThreshold: String
 }
 
 type Vote {
+  version: Int!
   txid: String!
   address: String!
   voterAddress: String!
@@ -58,11 +62,10 @@ type syncInfo {
 }
 
 type Query {
-  allTopics(filter: TopicFilter, skip: Int, first: Int, orderBy:String): [Topic]!
-  allOracles(filter: OracleFilter, skip: Int, first: Int, orderBy:String): [Oracle]!
-  searchOracles(searchPhrase: String, skip: Int, first: Int, orderBy:String): [Oracle]!
-  allVotes(filter: VoteFilter, skip: Int, first: Int, orderBy:String): [Vote]!
-  allBlocks(filter: VoteFilter, skip: Int, first: Int, orderBy:String): [Block]!
+  allTopics(filter: TopicFilter, orderBy: [Order!], limit: Int, skip: Int): [Topic]!
+  allOracles(filter: OracleFilter, orderBy: [Order!], limit: Int, skip: Int ): [Oracle]!
+  searchOracles(searchPhrase: String, orderBy: [Order!], limit: Int, skip: Int): [Oracle]!
+  allVotes(filter: VoteFilter, orderBy: [Order!], limit: Int, skip: Int): [Vote]!
   syncInfo: syncInfo!
 }
 
@@ -79,6 +82,7 @@ input OracleFilter {
   resultSetterAddress: String
   resultSetterQAddress: String
   status: _OracleStatusType
+  token: _TokenType
 }
 
 input VoteFilter {
@@ -93,7 +97,6 @@ input VoteFilter {
 type Mutation {
   createTopic(
     address: String!
-    creatorAddress: String!
     name: String!
     options: [String!]!
     blockNum: Int
@@ -102,10 +105,7 @@ type Mutation {
   createOracle(
     address: String!
     topicAddress: String!
-    creatorAddress: String!
     token: _TokenType!
-    name: String!
-    options: [String!]!
     optionIdxs: [Int!]!
     blockNum: Int!
     endBlock: Int!
@@ -127,6 +127,11 @@ type Subscription {
 
 input topicSubscriptionFilter {
   mutation_in: [_ModelMutationType!]
+}
+
+input Order {
+  field: String!
+  direction: _OrderDirection!
 }
 
 type TopicSubscriptionPayload {
@@ -153,7 +158,12 @@ enum _TokenType {
   QTUM
   BOT
 }
+
+enum _OrderDirection {
+  DESC
+  ASC
+}
 `;
 
 // Generate the schema object from your types definition.
-module.exports = makeExecutableSchema({typeDefs, resolvers});
+module.exports = makeExecutableSchema({ typeDefs, resolvers });

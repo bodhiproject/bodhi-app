@@ -26,7 +26,7 @@
     "nedb-promise": "^2.0.1",
     "node-fetch": "^1.7.3",
     "pg": "^7.4.0",
-    "qweb3": "^0.2.6",
+    "qweb3": "^0.4.0",
     "subscriptions-transport-ws": "^0.9.1"
   }
 }

@@ -13,13 +13,7 @@ class DecentralizedOracle {
   }
 
   decode() {
-    let nameHex = _.reduce(this.rawLog['_name'], (hexStr, value) => {
-      return hexStr += value;
-    }, '');
-    this.name = Utils.toUtf8(nameHex);
-    let intermedia = _.map(this.rawLog['_resultNames'], (item) => Utils.toUtf8(item));
-    this.resultNames = _.filter(intermedia, item => !!item);
-
+    this.version = this.rawLog['_version'].toNumber();
     this.contractAddress = this.rawLog['_contractAddress'];
     this.eventAddress = this.rawLog['_eventAddress'];
     this.numOfResults = this.rawLog['_numOfResults'].toNumber();
@@ -29,22 +23,26 @@ class DecentralizedOracle {
   }
 
   translate() {
-    var optionIdxs = Array.from(Array(this.numOfResults).keys());
-    optionIdxs.splice(this.lastResultIndex, 1);
+    let optionIdxs = Array.from(Array(this.numOfResults).keys());
+    _.remove(optionIdxs, (num) => {
+      return num === this.lastResultIndex;
+    });
 
     return {
       _id: this.contractAddress,
+      version: this.version,
       address: this.contractAddress,
       txid: this.txid,
       topicAddress:this.eventAddress,
       status: 'VOTING',
       token: 'BOT',
       name: this.name,
-      options: this.resultNames,
+      options: this.options,
       optionIdxs: optionIdxs,
       amounts: _.fill(Array(this.numOfResults), '0'),
       resultIdx: null,
       blockNum: this.blockNum,
+      startBlock: this.blockNum,
       endBlock: this.arbitrationEndBlock,
       consensusThreshold: this.consensusThreshold
     }

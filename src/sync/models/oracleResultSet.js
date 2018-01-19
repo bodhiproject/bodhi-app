@@ -10,12 +10,14 @@ class OracleResultSet {
   }
 
   decode() {
+    this.version = this.rawLog['_version'].toNumber();
     this.oracleAddress = this.rawLog['_oracleAddress'];
     this.resultIndex = this.rawLog['_resultIndex'].toNumber();
   }
 
   translate() {
     return {
+      version: this.version,
       oracleAddress: this.oracleAddress,
       resultIdx: this.resultIndex
     }

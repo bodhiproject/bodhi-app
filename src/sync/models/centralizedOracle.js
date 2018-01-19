@@ -14,19 +14,14 @@ class CentralizedOracle {
   }
 
   decode() {
-    let nameHex = _.reduce(this.rawLog['_name'], (hexStr, value) => {
-      return hexStr += value;
-    }, '');
-    this.name = Utils.toUtf8(nameHex);
-
-    let intermedia = _.map(this.rawLog['_resultNames'], (item) => Utils.toUtf8(item));
-    this.resultNames = _.filter(intermedia, item => !!item);
-
+    this.version = this.rawLog['_version'].toNumber();
     this.contractAddress = this.rawLog['_contractAddress'];
     this.oracle = this.rawLog['_oracle'];
     this.eventAddress = this.rawLog['_eventAddress'];
     this.numOfResults = this.rawLog['_numOfResults'].toNumber();
+    this.bettingStartBlock = this.rawLog['_bettingStartBlock'].toNumber();
     this.bettingEndBlock = this.rawLog['_bettingEndBlock'].toNumber();
+    this.resultSettingStartBlock = this.rawLog['_resultSettingStartBlock'].toNumber();
     this.resultSettingEndBlock = this.rawLog['_resultSettingEndBlock'].toNumber();
     this.consensusThreshold = this.rawLog['_consensusThreshold'].toJSON();
   }
@@ -34,6 +29,7 @@ class CentralizedOracle {
   translate() {
     return {
       _id : this.contractAddress,
+      version: this.version,
       address: this.contractAddress,
       txid: this.txid,
       topicAddress:this.eventAddress,
@@ -42,12 +38,14 @@ class CentralizedOracle {
       status: 'VOTING',
       token: 'QTUM',
       name: this.name,
-      options: this.resultNames,
+      options: this.options,
       optionIdxs: Array.from(Array(this.numOfResults).keys()),
       amounts: _.fill(Array(this.numOfResults), '0'),
       resultIdx: null,
       blockNum: this.blockNum,
+      startBlock: this.bettingStartBlock,
       endBlock: this.bettingEndBlock,
+      resultSetStartBlock: this.resultSettingStartBlock,
       resultSetEndBlock: this.resultSettingEndBlock,
       consensusThreshold: this.consensusThreshold
     }

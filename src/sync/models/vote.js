@@ -13,6 +13,7 @@ class Vote {
   }
 
   decode() {
+    this.version = this.rawLog['_version'].toNumber();
     this.oracleAddress = this.rawLog['_oracleAddress'];
     this.participant = this.rawLog['_participant'];
     this.resultIndex = this.rawLog['_resultIndex'].toNumber();
@@ -22,6 +23,7 @@ class Vote {
   translate() {
     return {
       _id: this.txid,
+      version: this.version,
       txid: this.txid,
       voterAddress: this.participant,
       voterQAddress: Decoder.toQtumAddress(this.participant),
