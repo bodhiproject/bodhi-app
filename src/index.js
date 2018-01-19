@@ -55,16 +55,25 @@ qtumprocess.stdout.on('data', (data) => {
 });
 
 qtumprocess.stderr.on('data', (data) => {
-  console.log(`stderr: ${data}`);
+  console.log(`qtum node cant start with error: ${data}`);
+  process.exit();
 });
 
 qtumprocess.on('close', (code) => {
-  console.log(`child process exited with code ${code}`);
+  console.log(`qtum node exited with code ${code}`);
+  process.exit();
 });
 
-// 5s is sufficient for qtumd to start
+function handle(signal) {
+  console.log(`Received ${signal}, exiting`);
+  qtumprocess.kill();
+}
+
+process.on('SIGINT', handle);
+process.on('SIGTERM', handle);
+
+// 3s is sufficient for qtumd to start
 setTimeout(function(){
   startSync();
   startAPI();
-}, 5000);
-
+}, 3000);
