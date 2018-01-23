@@ -388,7 +388,10 @@ async function syncFinalResultSet(db, startBlock, endBlock, removeHexPrefix, top
             topicsNeedBalanceUpdate.add(topicResult.topicAddress);
 
             await db.Topics.update({_id: topicResult.topicAddress},
-              {$set: {resultIdx: topicResult.resultIdx, status:'WITHDRAW'}}, {});
+              {$set: {resultIdx: topicResult.resultIdx, status:'WITHDRAW'}});
+
+            await db.Oracles.update({topicAddress: topicResult.topicAddress},
+              {$set: {resultIdx: topicResult.resultIdx, status:'WITHDRAW'}}, {multi: true});
             resolve();
           } catch(err) {
             console.error(`ERROR: ${err.message}`);
