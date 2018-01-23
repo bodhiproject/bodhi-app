@@ -1,9 +1,10 @@
+/* eslint no-underscore-dangle: 0 */
+
 const _ = require('lodash');
 const Decoder = require('qweb3').Decoder;
 
 class Vote {
   constructor(blockNum, txid, rawLog) {
-
     if (!_.isEmpty(rawLog)) {
       this.blockNum = blockNum;
       this.txid = txid;
@@ -13,11 +14,11 @@ class Vote {
   }
 
   decode() {
-    this.version = this.rawLog['_version'].toNumber();
-    this.oracleAddress = this.rawLog['_oracleAddress'];
-    this.participant = this.rawLog['_participant'];
-    this.resultIndex = this.rawLog['_resultIndex'].toNumber();
-    this.votedAmount = this.rawLog['_votedAmount'].toJSON();
+    this.version = this.rawLog._version.toNumber();
+    this.oracleAddress = this.rawLog._oracleAddress;
+    this.participant = this.rawLog._participant;
+    this.resultIndex = this.rawLog._resultIndex.toNumber();
+    this.votedAmount = this.rawLog._votedAmount.toJSON();
   }
 
   translate() {
@@ -31,7 +32,7 @@ class Vote {
       optionIdx: this.resultIndex,
       amount: this.votedAmount,
       blockNum: this.blockNum,
-    }
+    };
   }
 }
 

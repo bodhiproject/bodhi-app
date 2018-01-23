@@ -1,6 +1,6 @@
-const {Logger, MongoClient} = require('mongodb');
+const { Logger, MongoClient } = require('mongodb');
 
-const config = require('../config')
+const config = require('../config');
 
 module.exports = async () => {
   const db = await MongoClient.connect(config.MONGO_URL);
@@ -16,7 +16,7 @@ module.exports = async () => {
     Connection: db,
     Topics: db.collection('topics'),
     Oracles: db.collection('oracles'),
-    Votes:  db.collection('votes'),
+    Votes: db.collection('votes'),
     Blocks: db.collection('blocks'),
   };
-}
+};

@@ -1,10 +1,10 @@
+/* eslint no-underscore-dangle: 0 */
+
 const _ = require('lodash');
-const Decoder = require('qweb3').Decoder;
 const Utils = require('qweb3').Utils;
 
 class Topic {
   constructor(blockNum, txid, rawLog) {
-
     if (!_.isEmpty(rawLog)) {
       this.blockNum = blockNum;
       this.txid = txid;
@@ -14,15 +14,13 @@ class Topic {
   }
 
   decode() {
-    this.version = this.rawLog['_version'].toNumber();
-    this.topicAddress = this.rawLog['_topicAddress'];
+    this.version = this.rawLog._version.toNumber();
+    this.topicAddress = this.rawLog._topicAddress;
 
-    let nameHex = _.reduce(this.rawLog['_name'], (hexStr, value) => {
-      return hexStr += value;
-    }, '');
-    this.name = Utils.toUtf8(nameHex)
+    const nameHex = _.reduce(this.rawLog._name, (hexStr, value) => hexStr.concat(value), '');
+    this.name = Utils.toUtf8(nameHex);
 
-    let intermedia = _.map(this.rawLog['_resultNames'], (item) => Utils.toUtf8(item));
+    const intermedia = _.map(this.rawLog._resultNames, item => Utils.toUtf8(item));
     this.resultNames = _.filter(intermedia, item => !!item);
   }
 
@@ -37,9 +35,9 @@ class Topic {
       options: this.resultNames,
       resultIdx: null,
       qtumAmount: _.fill(Array(this.resultNames.length), '0'),
-      botAmount:_.fill(Array(this.resultNames.length), '0'),
+      botAmount: _.fill(Array(this.resultNames.length), '0'),
       blockNum: this.blockNum,
-    }
+    };
   }
 }
 

@@ -1,10 +1,10 @@
+/* eslint no-underscore-dangle: 0 */
+
 const _ = require('lodash');
 const Decoder = require('qweb3').Decoder;
-const Utils = require('qweb3').Utils;
 
 class CentralizedOracle {
   constructor(blockNum, txid, rawLog) {
-
     if (!_.isEmpty(rawLog)) {
       this.txid = txid;
       this.blockNum = blockNum;
@@ -14,26 +14,26 @@ class CentralizedOracle {
   }
 
   decode() {
-    this.version = this.rawLog['_version'].toNumber();
-    this.contractAddress = this.rawLog['_contractAddress'];
-    this.oracle = this.rawLog['_oracle'];
-    this.eventAddress = this.rawLog['_eventAddress'];
-    this.numOfResults = this.rawLog['_numOfResults'].toNumber();
-    this.bettingStartBlock = this.rawLog['_bettingStartBlock'].toNumber();
-    this.bettingEndBlock = this.rawLog['_bettingEndBlock'].toNumber();
-    this.resultSettingStartBlock = this.rawLog['_resultSettingStartBlock'].toNumber();
-    this.resultSettingEndBlock = this.rawLog['_resultSettingEndBlock'].toNumber();
-    this.consensusThreshold = this.rawLog['_consensusThreshold'].toJSON();
+    this.version = this.rawLog._version.toNumber();
+    this.contractAddress = this.rawLog._contractAddress;
+    this.oracle = this.rawLog._oracle;
+    this.eventAddress = this.rawLog._eventAddress;
+    this.numOfResults = this.rawLog._numOfResults.toNumber();
+    this.bettingStartBlock = this.rawLog._bettingStartBlock.toNumber();
+    this.bettingEndBlock = this.rawLog._bettingEndBlock.toNumber();
+    this.resultSettingStartBlock = this.rawLog._resultSettingStartBlock.toNumber();
+    this.resultSettingEndBlock = this.rawLog._resultSettingEndBlock.toNumber();
+    this.consensusThreshold = this.rawLog._consensusThreshold.toJSON();
   }
 
   translate() {
     return {
-      _id : this.contractAddress,
+      _id: this.contractAddress,
       version: this.version,
       address: this.contractAddress,
       txid: this.txid,
-      topicAddress:this.eventAddress,
-      resultSetterAddress:this.oracle,
+      topicAddress: this.eventAddress,
+      resultSetterAddress: this.oracle,
       resultSetterQAddress: Decoder.toQtumAddress(this.oracle),
       status: 'VOTING',
       token: 'QTUM',
@@ -47,8 +47,8 @@ class CentralizedOracle {
       endBlock: this.bettingEndBlock,
       resultSetStartBlock: this.resultSettingStartBlock,
       resultSetEndBlock: this.resultSettingEndBlock,
-      consensusThreshold: this.consensusThreshold
-    }
+      consensusThreshold: this.consensusThreshold,
+    };
   }
 }
 

@@ -1,8 +1,9 @@
+/* eslint no-underscore-dangle: 0 */
+
 const _ = require('lodash');
 
 class OracleResultSet {
   constructor(rawLog) {
-
     if (!_.isEmpty(rawLog)) {
       this.rawLog = rawLog;
       this.decode();
@@ -10,17 +11,17 @@ class OracleResultSet {
   }
 
   decode() {
-    this.version = this.rawLog['_version'].toNumber();
-    this.oracleAddress = this.rawLog['_oracleAddress'];
-    this.resultIndex = this.rawLog['_resultIndex'].toNumber();
+    this.version = this.rawLog._version.toNumber();
+    this.oracleAddress = this.rawLog._oracleAddress;
+    this.resultIndex = this.rawLog._resultIndex.toNumber();
   }
 
   translate() {
     return {
       version: this.version,
       oracleAddress: this.oracleAddress,
-      resultIdx: this.resultIndex
-    }
+      resultIdx: this.resultIndex,
+    };
   }
 }
 

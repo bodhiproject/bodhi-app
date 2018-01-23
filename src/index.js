@@ -1,36 +1,35 @@
 const express = require('express');
-const cors = require('cors')
-const {spawn} = require('child_process');
+const cors = require('cors');
+const { spawn } = require('child_process');
 
 // This package automatically parses JSON requests.
 const bodyParser = require('body-parser');
 
 // This package will handle GraphQL server requests and responses
 // for you, based on your schema.
-const {graphqlExpress, graphiqlExpress} = require('apollo-server-express');
+const { graphqlExpress, graphiqlExpress } = require('apollo-server-express');
 
 const schema = require('./schema');
 
 const connectDB = require('./db/nedb');
-const startSync = require('./sync')
+const startSync = require('./sync');
 
-const {execute, subscribe} = require('graphql');
-const {createServer} = require('http');
-const {SubscriptionServer} = require('subscriptions-transport-ws');
+const { execute, subscribe } = require('graphql');
+const { createServer } = require('http');
+const { SubscriptionServer } = require('subscriptions-transport-ws');
 
 const startAPI = async () => {
-
-  const db = await connectDB()
-  var app = express();
+  const db = await connectDB();
+  const app = express();
 
   const PORT = 5555;
   app.use(cors());
 
   app.use('/graphql', bodyParser.json(), graphqlExpress({
     context: {
-      db
+      db,
     },
-    schema
+    schema,
   }));
 
   app.use('/graphiql', graphiqlExpress({
@@ -41,14 +40,14 @@ const startAPI = async () => {
   const server = createServer(app);
   server.listen(PORT, () => {
     SubscriptionServer.create(
-      {execute, subscribe, schema},
-      {server, path: '/subscriptions'},
+      { execute, subscribe, schema },
+      { server, path: '/subscriptions' },
     );
-    console.log(`Bodhi API GraphQL server running on http://localhost:${PORT}.`)
+    console.log(`Bodhi API GraphQL server running on http://localhost:${PORT}.`);
   });
 };
 
-const qtumprocess = spawn(`./qtum/bin/qtumd`, ['-testnet', '-logevents', '-rpcuser=bodhi', '-rpcpassword=bodhi']);
+const qtumprocess = spawn('./qtum/bin/qtumd', ['-testnet', '-logevents', '-rpcuser=bodhi', '-rpcpassword=bodhi']);
 
 qtumprocess.stdout.on('data', (data) => {
   console.log(`stdout: ${data}`);
@@ -73,7 +72,7 @@ process.on('SIGINT', handle);
 process.on('SIGTERM', handle);
 
 // 3s is sufficient for qtumd to start
-setTimeout(function(){
+setTimeout(() => {
   startSync();
   startAPI();
 }, 3000);
