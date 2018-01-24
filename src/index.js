@@ -1,49 +1,47 @@
-const express = require('express');
-const cors = require('cors');
+const restify = require('restify');
+const corsMiddleware = require('restify-cors-middleware');
 const { spawn } = require('child_process');
-
-// This package automatically parses JSON requests.
-const bodyParser = require('body-parser');
-
-// This package will handle GraphQL server requests and responses
-// for you, based on your schema.
-const { graphqlExpress, graphiqlExpress } = require('apollo-server-express');
+const { execute, subscribe } = require('graphql');
+const { SubscriptionServer } = require('subscriptions-transport-ws');
 
 const schema = require('./schema');
 
-const connectDB = require('./db/nedb');
+const syncRouter = require('./route/sync');
+const apiRouter = require('./route/api');
+
 const startSync = require('./sync');
 
-const { execute, subscribe } = require('graphql');
-const { createServer } = require('http');
-const { SubscriptionServer } = require('subscriptions-transport-ws');
+const PORT = 5555;
+
+const server = restify.createServer({
+  title: 'Bodhi Synchroniser',
+});
+
+const cors = corsMiddleware({
+  origins: ['*'],
+});
+server.pre(cors.preflight);
+server.use(cors.actual);
+server.use(restify.plugins.bodyParser({ mapParams: true }));
+server.use(restify.plugins.queryParser());
+server.on('after', (req, res, route, err) => {
+  if (route) {
+    console.log(`${route.methods[0]} ${route.spec.path} ${res.statusCode}`);
+  } else {
+    console.log(`${err.message}`);
+  }
+});
 
 const startAPI = async () => {
-  const db = await connectDB();
-  const app = express();
+  syncRouter.applyRoutes(server);
+  apiRouter.applyRoutes(server);
 
-  const PORT = 5555;
-  app.use(cors());
-
-  app.use('/graphql', bodyParser.json(), graphqlExpress({
-    context: {
-      db,
-    },
-    schema,
-  }));
-
-  app.use('/graphiql', graphiqlExpress({
-    endpointURL: '/graphql',
-    subscriptionsEndpoint: `ws://localhost:${PORT}/subscriptions`,
-  }));
-
-  const server = createServer(app);
   server.listen(PORT, () => {
     SubscriptionServer.create(
       { execute, subscribe, schema },
       { server, path: '/subscriptions' },
     );
-    console.log(`Bodhi API GraphQL server running on http://localhost:${PORT}.`);
+    console.log(`Bodhi API server running on http://localhost:${PORT}.`);
   });
 };
 
@@ -63,13 +61,12 @@ qtumprocess.on('close', (code) => {
   process.exit();
 });
 
-function handle(signal) {
+function exit(signal) {
   console.log(`Received ${signal}, exiting`);
   qtumprocess.kill();
 }
 
-process.on('SIGINT', handle);
-process.on('SIGTERM', handle);
+process.on(['SIGINT', 'SIGTERM'], exit);
 
 // 3s is sufficient for qtumd to start
 setTimeout(() => {

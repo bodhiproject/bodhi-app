@@ -4,7 +4,7 @@ const _ = require('lodash');
 const Qweb3 = require('qweb3').default;
 const Contract = require('qweb3').Contract;
 
-const config = require('../config');
+const config = require('../config/config');
 const connectDB = require('../db/nedb');
 
 const qclient = new Qweb3(config.QTUM_RPC_ADDRESS);
@@ -409,11 +409,15 @@ async function syncFinalResultSet(db, startBlock, endBlock, removeHexPrefix, top
             // safeguard to update balance, can be removed in the future
             topicsNeedBalanceUpdate.add(topicResult.topicAddress);
 
-            await db.Topics.update({_id: topicResult.topicAddress},
-              {$set: {resultIdx: topicResult.resultIdx, status:'WITHDRAW'}});
+            await db.Topics.update(
+              { _id: topicResult.topicAddress },
+              { $set: { resultIdx: topicResult.resultIdx, status: 'WITHDRAW' } },
+            );
 
-            await db.Oracles.update({topicAddress: topicResult.topicAddress},
-              {$set: {resultIdx: topicResult.resultIdx, status:'WITHDRAW'}}, {multi: true});
+            await db.Oracles.update(
+              { topicAddress: topicResult.topicAddress },
+              { $set: { resultIdx: topicResult.resultIdx, status: 'WITHDRAW' } }, { multi: true },
+            );
             resolve();
           } catch (err) {
             console.error(`ERROR: ${err.message}`);
