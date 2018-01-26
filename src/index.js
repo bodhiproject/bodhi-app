@@ -1,8 +1,13 @@
+require("babel-core/register");
+require('babel-polyfill');
+
+const path = require('path');
 const restify = require('restify');
 const corsMiddleware = require('restify-cors-middleware');
 const { spawn } = require('child_process');
 const { execute, subscribe } = require('graphql');
 const { SubscriptionServer } = require('subscriptions-transport-ws');
+const opn = require('opn');
 
 const schema = require('./schema');
 
@@ -20,6 +25,7 @@ const server = restify.createServer({
 const cors = corsMiddleware({
   origins: ['*'],
 });
+
 server.pre(cors.preflight);
 server.use(cors.actual);
 server.use(restify.plugins.bodyParser({ mapParams: true }));
@@ -36,16 +42,45 @@ const startAPI = async () => {
   syncRouter.applyRoutes(server);
   apiRouter.applyRoutes(server);
 
+  server.get(/\/?.*/, restify.plugins.serveStatic({
+    directory: path.join(__dirname, '../ui'),
+    default: 'index.html',
+  }));
+
   server.listen(PORT, () => {
     SubscriptionServer.create(
       { execute, subscribe, schema },
       { server, path: '/subscriptions' },
     );
-    console.log(`Bodhi API server running on http://localhost:${PORT}.`);
+    console.log(`Bodhi App is running on http://localhost:${PORT}.`);
   });
 };
 
-const qtumprocess = spawn('./qtum/bin/qtumd', ['-testnet', '-logevents', '-rpcuser=bodhi', '-rpcpassword=bodhi']);
+const openBrowser = async () => {
+  try {
+    const platform = process.platform;
+    if (platform.includes('darwin')) {
+      await opn(`http://localhost:${PORT}`, {
+        app: ['google chrome', '--incognito'],
+      });
+    } else if (platform.includes('win')) {
+      await opn(`http://localhost:${PORT}`, {
+        app: ['chrome', '--incognito'],
+      });
+    } else if (platform.includes('linux')) {
+      await opn(`http://localhost:${PORT}`, {
+        app: ['google-chrome', '--incognito'],
+      });
+    }
+  } catch(err) {
+    console.debug('Chrome not found. Launching default browser.');
+    await opn(`http://localhost:${PORT}`);
+  }
+};
+
+// avoid using path.join for pkg to pack qtumd
+const qtumdPath = path.dirname(process.argv[0])+'/qtumd';
+const qtumprocess = spawn(qtumdPath, ['-testnet', '-logevents', '-rpcuser=bodhi', '-rpcpassword=bodhi'], {});
 
 qtumprocess.stdout.on('data', (data) => {
   console.log(`stdout: ${data}`);
@@ -66,10 +101,13 @@ function exit(signal) {
   qtumprocess.kill();
 }
 
-process.on(['SIGINT', 'SIGTERM'], exit);
+process.on('SIGINT', exit);
+process.on('SIGTERM', exit);
+process.on('SIGHUP', exit);
 
 // 3s is sufficient for qtumd to start
 setTimeout(() => {
   startSync();
   startAPI();
+  openBrowser();
 }, 3000);
