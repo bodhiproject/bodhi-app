@@ -99,6 +99,7 @@ qtumprocess.on('close', (code) => {
 function exit(signal) {
   console.log(`Received ${signal}, exiting`);
   qtumprocess.kill();
+  process.exit();
 }
 
 process.on('SIGINT', exit);

@@ -43,7 +43,6 @@ type Oracle {
 type Vote {
   version: Int!
   txid: String!
-  address: String!
   voterAddress: String!
   voterQAddress: String!
   oracleAddress: String!

@@ -79,9 +79,10 @@ function buildSearchOracleFilter(searchPhrase) {
   }
 
   const filters = [];
+  const searchRegex = new RegExp(`.*${searchPhrase}.*`);
   for (let i = 0; i < filterFields.length; i++) {
     const filter = {};
-    filter[filterFields[i]] = { $regex: `.*${searchPhrase}.*` };
+    filter[filterFields[i]] = { $regex: searchRegex };
     filters.push(filter);
   }
 
