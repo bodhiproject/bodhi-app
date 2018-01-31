@@ -1,4 +1,4 @@
-require("babel-core/register");
+require('babel-core/register');
 require('babel-polyfill');
 
 const path = require('path');
@@ -72,14 +72,14 @@ const openBrowser = async () => {
         app: ['google-chrome', '--incognito'],
       });
     }
-  } catch(err) {
+  } catch (err) {
     console.debug('Chrome not found. Launching default browser.');
     await opn(`http://localhost:${PORT}`);
   }
 };
 
 // avoid using path.join for pkg to pack qtumd
-const qtumdPath = path.dirname(process.argv[0])+'/qtumd';
+const qtumdPath = `${path.dirname(process.argv[0])}/qtumd`;
 const qtumprocess = spawn(qtumdPath, ['-testnet', '-logevents', '-rpcuser=bodhi', '-rpcpassword=bodhi'], {});
 
 qtumprocess.stdout.on('data', (data) => {
