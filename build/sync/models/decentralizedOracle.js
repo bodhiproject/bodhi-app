@@ -28,7 +28,7 @@ var DecentralizedOracle = function () {
       this.eventAddress = this.rawLog._eventAddress;
       this.numOfResults = this.rawLog._numOfResults.toNumber();
       this.lastResultIndex = this.rawLog._lastResultIndex.toNumber();
-      this.arbitrationEndBlock = this.rawLog._arbitrationEndBlock.toNumber();
+      this.arbitrationEndTime = this.rawLog._arbitrationEndTime.toNumber();
       this.consensusThreshold = this.rawLog._consensusThreshold.toJSON();
     }
   }, {
@@ -55,8 +55,8 @@ var DecentralizedOracle = function () {
         amounts: _.fill(Array(this.numOfResults), '0'),
         resultIdx: null,
         blockNum: this.blockNum,
-        startBlock: this.blockNum,
-        endBlock: this.arbitrationEndBlock,
+        startTime: this.blockNum,
+        endTime: this.arbitrationEndTime,
         consensusThreshold: this.consensusThreshold
       };
     }

@@ -4,7 +4,7 @@ var sync = function () {
   var _ref2 = _asyncToGenerator( /*#__PURE__*/regeneratorRuntime.mark(function _callee10(db) {
     var _this = this;
 
-    var removeHexPrefix, topicsNeedBalanceUpdate, oraclesNeedBalanceUpdate, currentBlockChainHeight, startBlock, blocks;
+    var removeHexPrefix, topicsNeedBalanceUpdate, oraclesNeedBalanceUpdate, currentBlockChainHeight, currentBlockHash, currentBlockTime, startBlock, blocks;
     return regeneratorRuntime.wrap(function _callee10$(_context10) {
       while (1) {
         switch (_context10.prev = _context10.next) {
@@ -20,11 +20,21 @@ var sync = function () {
 
             currentBlockChainHeight -= 1;
 
+            _context10.next = 9;
+            return qclient.getBlockHash(currentBlockChainHeight);
+
+          case 9:
+            currentBlockHash = _context10.sent;
+            _context10.next = 12;
+            return qclient.getBlock(currentBlockHash);
+
+          case 12:
+            currentBlockTime = _context10.sent.time;
             startBlock = contractDeployedBlockNum;
-            _context10.next = 10;
+            _context10.next = 16;
             return db.Blocks.cfind({}).sort({ blockNum: -1 }).limit(1).exec();
 
-          case 10:
+          case 16:
             blocks = _context10.sent;
 
             if (blocks.length > 0) {
@@ -47,7 +57,7 @@ var sync = function () {
                         console.log('Synced Topics\n');
 
                         _context3.next = 6;
-                        return Promise.all([syncCentralizedOracleCreated(db, startBlock, endBlock, removeHexPrefix), syncDecentralizedOracleCreated(db, startBlock, endBlock, removeHexPrefix), syncOracleResultVoted(db, startBlock, endBlock, removeHexPrefix, oraclesNeedBalanceUpdate)]);
+                        return Promise.all([syncCentralizedOracleCreated(db, startBlock, endBlock, removeHexPrefix), syncDecentralizedOracleCreated(db, startBlock, endBlock, removeHexPrefix, currentBlockTime), syncOracleResultVoted(db, startBlock, endBlock, removeHexPrefix, oraclesNeedBalanceUpdate)]);
 
                       case 6:
                         console.log('Synced Oracles\n');
@@ -68,7 +78,7 @@ var sync = function () {
                                   switch (_context2.prev = _context2.next) {
                                     case 0:
                                       _context2.next = 2;
-                                      return db.Blocks.insert({ _id: i, blockNum: i });
+                                      return db.Blocks.insert({ _id: i, blockNum: i, blockTime: currentBlockTime });
 
                                     case 2:
                                       resolve();
@@ -234,11 +244,11 @@ var sync = function () {
                             switch (_context8.prev = _context8.next) {
                               case 0:
                                 _context8.next = 2;
-                                return updateOraclesPassedEndBlock(currentBlockChainHeight, db);
+                                return updateOraclesPassedEndTime(currentBlockTime, db);
 
                               case 2:
                                 _context8.next = 4;
-                                return updateCentralizedOraclesPassedResultSetEndBlock(currentBlockChainHeight, db);
+                                return updateCentralizedOraclesPassedResultSetEndTime(currentBlockTime, db);
 
                               case 4:
 
@@ -263,7 +273,7 @@ var sync = function () {
               }, _callee9, _this);
             })));
 
-          case 13:
+          case 19:
           case 'end':
             return _context10.stop();
         }
@@ -517,7 +527,7 @@ var syncCentralizedOracleCreated = function () {
 }();
 
 var syncDecentralizedOracleCreated = function () {
-  var _ref16 = _asyncToGenerator( /*#__PURE__*/regeneratorRuntime.mark(function _callee17(db, startBlock, endBlock, removeHexPrefix) {
+  var _ref16 = _asyncToGenerator( /*#__PURE__*/regeneratorRuntime.mark(function _callee17(db, startBlock, endBlock, removeHexPrefix, currentBlockTime) {
     var _this4 = this;
 
     var result, createDecentralizedOraclePromises;
@@ -573,30 +583,32 @@ var syncDecentralizedOracleCreated = function () {
 
                               decentralOracle.name = topic.name;
                               decentralOracle.options = topic.options;
-                              _context16.next = 9;
+                              decentralOracle.startTime = currentBlockTime;
+
+                              _context16.next = 10;
                               return db.Oracles.insert(decentralOracle);
 
-                            case 9:
+                            case 10:
                               resolve();
-                              _context16.next = 16;
+                              _context16.next = 17;
                               break;
 
-                            case 12:
-                              _context16.prev = 12;
+                            case 13:
+                              _context16.prev = 13;
                               _context16.t0 = _context16['catch'](0);
 
                               console.error('ERROR: ' + _context16.t0.message);
                               resolve();
 
-                            case 16:
+                            case 17:
                             case 'end':
                               return _context16.stop();
                           }
                         }
-                      }, _callee16, _this4, [[0, 12]]);
+                      }, _callee16, _this4, [[0, 13]]);
                     }));
 
-                    return function (_x24) {
+                    return function (_x25) {
                       return _ref17.apply(this, arguments);
                     };
                   }());
@@ -616,7 +628,7 @@ var syncDecentralizedOracleCreated = function () {
     }, _callee17, this, [[1, 8]]);
   }));
 
-  return function syncDecentralizedOracleCreated(_x20, _x21, _x22, _x23) {
+  return function syncDecentralizedOracleCreated(_x20, _x21, _x22, _x23, _x24) {
     return _ref16.apply(this, arguments);
   };
 }();
@@ -695,7 +707,7 @@ var syncOracleResultVoted = function () {
                       }, _callee18, _this5, [[0, 8]]);
                     }));
 
-                    return function (_x30) {
+                    return function (_x31) {
                       return _ref19.apply(this, arguments);
                     };
                   }());
@@ -716,7 +728,7 @@ var syncOracleResultVoted = function () {
     }, _callee19, this, [[1, 8]]);
   }));
 
-  return function syncOracleResultVoted(_x25, _x26, _x27, _x28, _x29) {
+  return function syncOracleResultVoted(_x26, _x27, _x28, _x29, _x30) {
     return _ref18.apply(this, arguments);
   };
 }();
@@ -794,7 +806,7 @@ var syncOracleResultSet = function () {
                       }, _callee20, _this6, [[0, 8]]);
                     }));
 
-                    return function (_x36) {
+                    return function (_x37) {
                       return _ref21.apply(this, arguments);
                     };
                   }());
@@ -815,7 +827,7 @@ var syncOracleResultSet = function () {
     }, _callee21, this, [[1, 8]]);
   }));
 
-  return function syncOracleResultSet(_x31, _x32, _x33, _x34, _x35) {
+  return function syncOracleResultSet(_x32, _x33, _x34, _x35, _x36) {
     return _ref20.apply(this, arguments);
   };
 }();
@@ -897,7 +909,7 @@ var syncFinalResultSet = function () {
                       }, _callee22, _this7, [[0, 10]]);
                     }));
 
-                    return function (_x42) {
+                    return function (_x43) {
                       return _ref23.apply(this, arguments);
                     };
                   }());
@@ -918,23 +930,26 @@ var syncFinalResultSet = function () {
     }, _callee23, this, [[1, 8]]);
   }));
 
-  return function syncFinalResultSet(_x37, _x38, _x39, _x40, _x41) {
+  return function syncFinalResultSet(_x38, _x39, _x40, _x41, _x42) {
     return _ref22.apply(this, arguments);
   };
 }();
 
-var updateOraclesPassedEndBlock = function () {
-  var _ref24 = _asyncToGenerator( /*#__PURE__*/regeneratorRuntime.mark(function _callee24(currentBlockChainHeight, db) {
+// all central & decentral oracles with VOTING status and endTime less than currentBlockTime
+
+
+var updateOraclesPassedEndTime = function () {
+  var _ref24 = _asyncToGenerator( /*#__PURE__*/regeneratorRuntime.mark(function _callee24(currentBlockTime, db) {
     return regeneratorRuntime.wrap(function _callee24$(_context24) {
       while (1) {
         switch (_context24.prev = _context24.next) {
           case 0:
             _context24.prev = 0;
             _context24.next = 3;
-            return db.Oracles.update({ endBlock: { $lt: currentBlockChainHeight }, status: 'VOTING' }, { $set: { status: 'WAITRESULT' } }, { multi: true });
+            return db.Oracles.update({ endTime: { $lt: currentBlockTime }, status: 'VOTING' }, { $set: { status: 'WAITRESULT' } }, { multi: true });
 
           case 3:
-            console.log('Updated Oracles Passed EndBlock');
+            console.log('Updated Oracles passed endTime');
             _context24.next = 9;
             break;
 
@@ -942,7 +957,7 @@ var updateOraclesPassedEndBlock = function () {
             _context24.prev = 6;
             _context24.t0 = _context24['catch'](0);
 
-            console.error('ERROR: updateOraclesPassedEndBlock ' + _context24.t0.message);
+            console.error('ERROR: updateOraclesPassedEndTime ' + _context24.t0.message);
 
           case 9:
           case 'end':
@@ -952,23 +967,26 @@ var updateOraclesPassedEndBlock = function () {
     }, _callee24, this, [[0, 6]]);
   }));
 
-  return function updateOraclesPassedEndBlock(_x43, _x44) {
+  return function updateOraclesPassedEndTime(_x44, _x45) {
     return _ref24.apply(this, arguments);
   };
 }();
 
-var updateCentralizedOraclesPassedResultSetEndBlock = function () {
-  var _ref25 = _asyncToGenerator( /*#__PURE__*/regeneratorRuntime.mark(function _callee25(currentBlockChainHeight, db) {
+// central oracles with WAITRESULT status and resultSetEndTime less than currentBlockTime
+
+
+var updateCentralizedOraclesPassedResultSetEndTime = function () {
+  var _ref25 = _asyncToGenerator( /*#__PURE__*/regeneratorRuntime.mark(function _callee25(currentBlockTime, db) {
     return regeneratorRuntime.wrap(function _callee25$(_context25) {
       while (1) {
         switch (_context25.prev = _context25.next) {
           case 0:
             _context25.prev = 0;
             _context25.next = 3;
-            return db.Oracles.update({ resultSetEndBlock: { $lt: currentBlockChainHeight }, token: 'QTUM', status: 'WAITRESULT' }, { $set: { status: 'OPENRESULTSET' } }, { multi: true });
+            return db.Oracles.update({ resultSetEndTime: { $lt: currentBlockTime }, token: 'QTUM', status: 'WAITRESULT' }, { $set: { status: 'OPENRESULTSET' } }, { multi: true });
 
           case 3:
-            console.log('Updated COracles Passed ResultSetEndBlock');
+            console.log('Updated COracles passed resultSetEndTime');
             _context25.next = 9;
             break;
 
@@ -976,7 +994,7 @@ var updateCentralizedOraclesPassedResultSetEndBlock = function () {
             _context25.prev = 6;
             _context25.t0 = _context25['catch'](0);
 
-            console.error('ERROR: updateCentralizedOraclesPassedResultSetEndBlock ' + _context25.t0.message);
+            console.error('ERROR: updateCentralizedOraclesPassedResultSetEndTime ' + _context25.t0.message);
 
           case 9:
           case 'end':
@@ -986,7 +1004,7 @@ var updateCentralizedOraclesPassedResultSetEndBlock = function () {
     }, _callee25, this, [[0, 6]]);
   }));
 
-  return function updateCentralizedOraclesPassedResultSetEndBlock(_x45, _x46) {
+  return function updateCentralizedOraclesPassedResultSetEndTime(_x46, _x47) {
     return _ref25.apply(this, arguments);
   };
 }();
@@ -1105,7 +1123,7 @@ var updateOracleBalance = function () {
     }, _callee26, this, [[1, 10], [18, 24], [31, 37], [42, 48]]);
   }));
 
-  return function updateOracleBalance(_x47, _x48, _x49) {
+  return function updateOracleBalance(_x48, _x49, _x50) {
     return _ref26.apply(this, arguments);
   };
 }();
@@ -1201,7 +1219,7 @@ var updateTopicBalance = function () {
     }, _callee27, this, [[1, 10], [17, 28], [34, 40]]);
   }));
 
-  return function updateTopicBalance(_x50, _x51) {
+  return function updateTopicBalance(_x51, _x52) {
     return _ref27.apply(this, arguments);
   };
 }();
@@ -1230,7 +1248,7 @@ var Contracts = require('./contracts');
 
 var batchSize = 200;
 
-var contractDeployedBlockNum = 70653;
+var contractDeployedBlockNum = 78268;
 
 var senderAddress = 'qKjn4fStBaAtwGiwueJf9qFxgpbAvf1xAy'; // hardcode sender address as it doesnt matter
 
