@@ -33,10 +33,10 @@ type Oracle {
   amounts: [String!]!
   resultIdx: Int
   blockNum: Int!
-  startBlock: Int!
-  endBlock: Int!
-  resultSetStartBlock: Int
-  resultSetEndBlock: Int
+  startTime: Int!
+  endTime: Int!
+  resultSetStartTime: Int
+  resultSetEndTime: Int
   consensusThreshold: String
 }
 
