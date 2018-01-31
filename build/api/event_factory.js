@@ -25,12 +25,12 @@ var contract = new _qweb.Contract(_config2.default.QTUM_RPC_ADDRESS, _contract_m
 var EventFactory = {
   createTopic: function () {
     var _ref = _asyncToGenerator( /*#__PURE__*/regeneratorRuntime.mark(function _callee(args) {
-      var oracleAddress, eventName, resultNames, bettingStartBlock, bettingEndBlock, resultSettingStartBlock, resultSettingEndBlock, senderAddress;
+      var oracleAddress, eventName, resultNames, bettingStartTime, bettingEndTime, resultSettingStartTime, resultSettingEndTime, senderAddress;
       return regeneratorRuntime.wrap(function _callee$(_context) {
         while (1) {
           switch (_context.prev = _context.next) {
             case 0:
-              oracleAddress = args.oracleAddress, eventName = args.eventName, resultNames = args.resultNames, bettingStartBlock = args.bettingStartBlock, bettingEndBlock = args.bettingEndBlock, resultSettingStartBlock = args.resultSettingStartBlock, resultSettingEndBlock = args.resultSettingEndBlock, senderAddress = args.senderAddress;
+              oracleAddress = args.oracleAddress, eventName = args.eventName, resultNames = args.resultNames, bettingStartTime = args.bettingStartTime, bettingEndTime = args.bettingEndTime, resultSettingStartTime = args.resultSettingStartTime, resultSettingEndTime = args.resultSettingEndTime, senderAddress = args.senderAddress;
 
               if (!_lodash2.default.isUndefined(oracleAddress)) {
                 _context.next = 3;
@@ -56,36 +56,36 @@ var EventFactory = {
               throw new TypeError('resultNames needs to be defined');
 
             case 7:
-              if (!_lodash2.default.isUndefined(bettingStartBlock)) {
+              if (!_lodash2.default.isUndefined(bettingStartTime)) {
                 _context.next = 9;
                 break;
               }
 
-              throw new TypeError('bettingStartBlock needs to be defined');
+              throw new TypeError('bettingStartTime needs to be defined');
 
             case 9:
-              if (!_lodash2.default.isUndefined(bettingEndBlock)) {
+              if (!_lodash2.default.isUndefined(bettingEndTime)) {
                 _context.next = 11;
                 break;
               }
 
-              throw new TypeError('bettingEndBlock needs to be defined');
+              throw new TypeError('bettingEndTime needs to be defined');
 
             case 11:
-              if (!_lodash2.default.isUndefined(resultSettingStartBlock)) {
+              if (!_lodash2.default.isUndefined(resultSettingStartTime)) {
                 _context.next = 13;
                 break;
               }
 
-              throw new TypeError('resultSettingStartBlock needs to be defined');
+              throw new TypeError('resultSettingStartTime needs to be defined');
 
             case 13:
-              if (!_lodash2.default.isUndefined(resultSettingEndBlock)) {
+              if (!_lodash2.default.isUndefined(resultSettingEndTime)) {
                 _context.next = 15;
                 break;
               }
 
-              throw new TypeError('resultSettingEndBlock needs to be defined');
+              throw new TypeError('resultSettingEndTime needs to be defined');
 
             case 15:
               if (!_lodash2.default.isUndefined(senderAddress)) {
@@ -97,7 +97,7 @@ var EventFactory = {
 
             case 17:
               return _context.abrupt('return', contract.send('createTopic', {
-                methodArgs: [oracleAddress, eventName, resultNames, bettingStartBlock, bettingEndBlock, resultSettingStartBlock, resultSettingEndBlock],
+                methodArgs: [oracleAddress, eventName, resultNames, bettingStartTime, bettingEndTime, resultSettingStartTime, resultSettingEndTime],
                 gasLimit: GAS_LIMIT_CREATE_TOPIC,
                 senderAddress: senderAddress
               }));

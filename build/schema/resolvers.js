@@ -96,9 +96,10 @@ function buildSearchOracleFilter(searchPhrase) {
   }
 
   var filters = [];
+  var searchRegex = new RegExp('.*' + searchPhrase + '.*');
   for (var i = 0; i < filterFields.length; i++) {
     var filter = {};
-    filter[filterFields[i]] = { $regex: '.*' + searchPhrase + '.*' };
+    filter[filterFields[i]] = { $regex: searchRegex };
     filters.push(filter);
   }
 
