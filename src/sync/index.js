@@ -20,7 +20,7 @@ const Contracts = require('./contracts');
 
 const batchSize = 200;
 
-const contractDeployedBlockNum = 70653;
+const contractDeployedBlockNum = 78268;
 
 const senderAddress = 'qKjn4fStBaAtwGiwueJf9qFxgpbAvf1xAy'; // hardcode sender address as it doesnt matter
 
