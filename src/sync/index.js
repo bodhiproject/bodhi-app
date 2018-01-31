@@ -16,7 +16,7 @@ const Vote = require('./models/vote');
 const OracleResultSet = require('./models/oracleResultSet');
 const FinalResultSet = require('./models/finalResultSet');
 
-const Contracts = require('./contracts');
+const Contracts = require('../config/contract_metadata');
 
 const batchSize = 200;
 
