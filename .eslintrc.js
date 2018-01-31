@@ -1,11 +1,16 @@
 module.exports = {
   "extends": "airbnb",
   "env": {
-    "node": true
+    "node": true,
+    "mocha": true
   },
+  "parser": "babel-eslint",
   "parserOptions": {
     "ecmaVersion": 8,
-    "sourceType": "module"
+    "sourceType": "module",
+    "ecmaFeatures": {
+      "jsx": true
+    }
   },
   "rules": {
     "class-methods-use-this": [0
