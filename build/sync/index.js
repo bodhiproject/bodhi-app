@@ -1244,7 +1244,7 @@ var Vote = require('./models/vote');
 var OracleResultSet = require('./models/oracleResultSet');
 var FinalResultSet = require('./models/finalResultSet');
 
-var Contracts = require('./contracts');
+var Contracts = require('../config/contract_metadata');
 
 var batchSize = 200;
 
