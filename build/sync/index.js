@@ -1248,7 +1248,7 @@ var Contracts = require('../config/contract_metadata');
 
 var batchSize = 200;
 
-var contractDeployedBlockNum = 78268;
+var contractDeployedBlockNum = 78893;
 
 var senderAddress = 'qKjn4fStBaAtwGiwueJf9qFxgpbAvf1xAy'; // hardcode sender address as it doesnt matter
 
