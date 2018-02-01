@@ -7,6 +7,10 @@ import ContractMetadata from '../config/contract_metadata';
 const qClient = new Qweb3(Config.QTUM_RPC_ADDRESS);
 
 const Blockchain = {
+  async getBlockchainInfo() {
+    return qClient.getBlockchainInfo();
+  },
+
   async getBlockCount() {
     return qClient.getBlockCount();
   },

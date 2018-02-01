@@ -57,6 +57,15 @@ apiRouter.get('/list-unspent', (req, res, next) => {
 });
 
 /* Blockchain */
+apiRouter.get('/get-blockchain-info', (req, res, next) => {
+  Blockchain.getBlockchainInfo()
+    .then((result) => {
+      onRequestSuccess(res, result, next);
+    }, (err) => {
+      onRequestError(res, err, next);
+    });
+});
+
 apiRouter.get('/get-block-count', (req, res, next) => {
   Blockchain.getBlockCount()
     .then((result) => {
