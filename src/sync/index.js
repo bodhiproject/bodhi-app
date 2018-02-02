@@ -109,7 +109,7 @@ async function sync(db) {
       const updateBlockPromises = [];
       for (let i = startBlock; i <= endBlock; i++) {
         const updateBlockPromise = new Promise(async (resolve) => {
-          await db.Blocks.insert({ _id: i, blockNum: i, blockTime: currentBlockTime });
+          await db.Blocks.insert({ _id: i, blockNum: i });
           resolve();
         });
         updateBlockPromises.push(updateBlockPromise);
