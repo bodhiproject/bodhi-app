@@ -1,6 +1,3 @@
-require('babel-core/register');
-require('babel-polyfill');
-
 const path = require('path');
 const restify = require('restify');
 const corsMiddleware = require('restify-cors-middleware');
