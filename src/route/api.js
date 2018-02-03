@@ -1,5 +1,5 @@
-const Router = require('restify-router');
-const Qweb3 = require('qweb3');
+const { Router } = require('restify-router');
+const { Qweb3 } = require('qweb3');
 
 const Config = require('../config/config');
 const Blockchain = require('../api/blockchain');

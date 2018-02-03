@@ -1,5 +1,5 @@
 const _ = require('lodash');
-const Qweb3 = require('qweb3');
+const { Qweb3 } = require('qweb3');
 
 const Config = require('../config/config');
 const ContractMetadata = require('../config/contract_metadata');
