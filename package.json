@@ -42,7 +42,7 @@
     "node-fetch": "^1.7.3",
     "opn": "^5.2.0",
     "pg": "^7.4.0",
-    "qweb3": "^0.5.0",
+    "qweb3": "^0.6.0",
     "restify": "^6.3.4",
     "restify-cors-middleware": "^1.1.0",
     "restify-router": "^0.5.0",
