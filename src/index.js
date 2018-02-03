@@ -76,7 +76,7 @@ const openBrowser = async () => {
 };
 
 // avoid using path.join for pkg to pack qtumd
-const qtumdPath = path.dirname(__dirname)+'/qtumd';
+const qtumdPath = `${path.dirname(__dirname)}/qtumd`;
 const qtumprocess = spawn(qtumdPath, ['-testnet', '-logevents', '-rpcuser=bodhi', '-rpcpassword=bodhi'], {});
 
 qtumprocess.stdout.on('data', (data) => {
