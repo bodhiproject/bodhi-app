@@ -1,9 +1,8 @@
-import 'babel-polyfill';
-import Chai from 'chai';
-import ChaiAsPromised from 'chai-as-promised';
+const Chai = require('chai');
+const ChaiAsPromised = require('chai-as-promised');
 
-import Blockchain from '../../api/blockchain';
-import Mocks from './mock/blockchain';
+const Blockchain = require('../../api/blockchain');
+const Mocks = require('./mock/blockchain');
 
 Chai.use(ChaiAsPromised);
 const assert = Chai.assert;
