@@ -4,11 +4,11 @@
   "description": "An open source blockchain explorer for monitoring Bodhi platform",
   "main": "index.js",
   "scripts": {
-    "start": "babel-node src/index.js",
-    "start:debug": "babel-node --inspect src/index.js",
-    "build": "babel -d build src",
-    "test": "mocha --compilers js:babel-core/register --recursive src/test/.",
-    "lint:fix": "eslint --fix -- src/. test/.",
+    "start": "node src/index.js",
+    "start:debug": "node --inspect src/index.js",
+    "build": "",
+    "test": "mocha --recursive src/test/.",
+    "lint:fix": "eslint --fix -- src/.",
     "pkg:mac": " cp qtum/mac/bin/qtumd bin/mac/qtumd ; npm run build ; pkg . -t node9-mac -o bin/mac/bodhi-app-mac",
     "pkg:win64": " cp qtum/win64/bin/qtumd.exe bin/win64/qtumd.exe ; npm run build ; pkg . -t node9-win -o bin/win64/bodhi-app-win64.exe"
   },
@@ -20,7 +20,7 @@
   ],
   "author": "bodhi.network",
   "license": "ISC",
-  "bin": "build/index.js",
+  "bin": "src/index.js",
   "pkg": {
     "assets": "ui/"
   },
@@ -50,9 +50,6 @@
     "web3-utils": "^1.0.0-beta.26"
   },
   "devDependencies": {
-    "babel-cli": "^6.26.0",
-    "babel-eslint": "^8.2.1",
-    "babel-preset-env": "^1.6.1",
     "eslint": "^4.16.0",
     "eslint-config-airbnb": "^16.1.0",
     "eslint-plugin-import": "^2.8.0",
