@@ -1,8 +1,8 @@
-import _ from 'lodash';
-import { Contract } from 'qweb3';
+const _ = require('lodash');
+const Contract = require('qweb3');
 
-import Config from '../config/config';
-import ContractMetadata from '../config/contract_metadata';
+const Config = require('../config/config');
+const ContractMetadata = require('../config/contract_metadata');
 
 function getContract(contractAddress) {
   return new Contract(Config.QTUM_RPC_ADDRESS, contractAddress, ContractMetadata.TopicEvent.abi);

@@ -1,8 +1,8 @@
-import _ from 'lodash';
-import Qweb3 from 'qweb3';
+const _ = require('lodash');
+const Qweb3 = require('qweb3');
 
-import Config from '../config/config';
-import ContractMetadata from '../config/contract_metadata';
+const Config = require('../config/config');
+const ContractMetadata = require('../config/contract_metadata');
 
 const qClient = new Qweb3(Config.QTUM_RPC_ADDRESS);
 
