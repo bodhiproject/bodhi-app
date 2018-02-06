@@ -1,3 +1,6 @@
+const logger = require('./utils/logger');
+const fs = require('fs');
+
 const path = require('path');
 const restify = require('restify');
 const corsMiddleware = require('restify-cors-middleware');
@@ -7,6 +10,7 @@ const { SubscriptionServer } = require('subscriptions-transport-ws');
 const opn = require('opn');
 
 const schema = require('./schema');
+const config = require('./config/config');
 
 const syncRouter = require('./route/sync');
 const apiRouter = require('./route/api');
@@ -23,15 +27,21 @@ const cors = corsMiddleware({
   origins: ['*'],
 });
 
+const dir = config.LOG_PATH;
+
+if (!fs.existsSync(dir)){
+    fs.mkdirSync(dir);
+}
+
 server.pre(cors.preflight);
 server.use(cors.actual);
 server.use(restify.plugins.bodyParser({ mapParams: true }));
 server.use(restify.plugins.queryParser());
 server.on('after', (req, res, route, err) => {
   if (route) {
-    console.log(`${route.methods[0]} ${route.spec.path} ${res.statusCode}`);
+    logger.debug(`${route.methods[0]} ${route.spec.path} ${res.statusCode}`);
   } else {
-    console.log(`${err.message}`);
+    logger.error(`${err.message}`);
   }
 });
 
@@ -49,7 +59,7 @@ const startAPI = async () => {
       { execute, subscribe, schema },
       { server, path: '/subscriptions' },
     );
-    console.log(`Bodhi App is running on http://localhost:${PORT}.`);
+    logger.info(`Bodhi App is running on http://localhost:${PORT}.`);
   });
 };
 
@@ -69,8 +79,8 @@ const openBrowser = async () => {
         app: ['google-chrome', '--incognito'],
       });
     }
-  } catch (err) {
-    console.debug('Chrome not found. Launching default browser.');
+  } catch(err) {
+    logger.debug('Chrome not found. Launching default browser.');
     await opn(`http://localhost:${PORT}`);
   }
 };
@@ -80,21 +90,27 @@ const qtumdPath = `${path.dirname(__dirname)}/qtumd`;
 const qtumprocess = spawn(qtumdPath, ['-testnet', '-logevents', '-rpcuser=bodhi', '-rpcpassword=bodhi'], {});
 
 qtumprocess.stdout.on('data', (data) => {
-  console.log(`stdout: ${data}`);
+  logger.debug(`stdout: ${data}`);
 });
 
+// add delay to give some time to write to log file
 qtumprocess.stderr.on('data', (data) => {
-  console.log(`qtum node cant start with error: ${data}`);
-  process.exit();
+  logger.error(`qtum node cant start with error: ${data}`);
+  setTimeout(() => {
+    process.exit()
+  }, 500);
 });
 
+// add delay to give some time to write to log file
 qtumprocess.on('close', (code) => {
-  console.log(`qtum node exited with code ${code}`);
-  process.exit();
+  logger.debug(`qtum node exited with code ${code}`);
+  setTimeout(() => {
+    process.exit()
+  }, 500);
 });
 
 function exit(signal) {
-  console.log(`Received ${signal}, exiting`);
+  logger.debug(`Received ${signal}, exiting`);
   qtumprocess.kill();
   process.exit();
 }
@@ -109,3 +125,5 @@ setTimeout(() => {
   startAPI();
   openBrowser();
 }, 3000);
+
+

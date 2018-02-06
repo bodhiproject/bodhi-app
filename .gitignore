@@ -99,8 +99,6 @@ typings/
 # Yarn Integrity file
 .yarn-integrity
 
-# dotenv environment variables file
-.env
 
 
 ### Windows ###
@@ -131,3 +129,6 @@ $RECYCLE.BIN/
 *.db
 
 build/
+
+# log file
+src/logs/
