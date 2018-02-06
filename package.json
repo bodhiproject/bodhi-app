@@ -6,11 +6,10 @@
   "scripts": {
     "start": "node src/index.js",
     "start:debug": "node --inspect src/index.js",
-    "build": "",
     "test": "mocha --recursive src/test/.",
     "lint:fix": "eslint --fix -- src/.",
-    "pkg:mac": " cp qtum/mac/bin/qtumd bin/mac/qtumd ; npm run build ; pkg . -t node9-mac -o bin/mac/bodhi-app-mac",
-    "pkg:win64": " cp qtum/win64/bin/qtumd.exe bin/win64/qtumd.exe ; npm run build ; pkg . -t node9-win -o bin/win64/bodhi-app-win64.exe"
+    "pkg:mac": " cp qtum/mac/bin/qtumd bin/mac/qtumd ; pkg . -t node9-mac -o bin/mac/bodhi-app-mac",
+    "pkg:win64": " cp qtum/win64/bin/qtumd.exe bin/win64/qtumd.exe ; pkg . -t node9-win -o bin/win64/bodhi-app-win64.exe"
   },
   "keywords": [
     "qtum",
