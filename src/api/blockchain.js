@@ -7,6 +7,22 @@ import ContractMetadata from '../config/contract_metadata';
 const qClient = new Qweb3(Config.QTUM_RPC_ADDRESS);
 
 const Blockchain = {
+  async getBlock(args) {
+    const {
+      blockHash, // string
+    } = args;
+
+    if (_.isUndefined(blockHash)) {
+      throw new TypeError('blockHash needs to be defined');
+    }
+
+    return qClient.getBlock(blockHash);
+  },
+
+  async getBlockchainInfo() {
+    return qClient.getBlockchainInfo();
+  },
+
   async getBlockCount() {
     return qClient.getBlockCount();
   },

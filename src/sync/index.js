@@ -16,11 +16,11 @@ const Vote = require('./models/vote');
 const OracleResultSet = require('./models/oracleResultSet');
 const FinalResultSet = require('./models/finalResultSet');
 
-const Contracts = require('./contracts');
+const Contracts = require('../config/contract_metadata');
 
 const batchSize = 200;
 
-const contractDeployedBlockNum = 70653;
+const contractDeployedBlockNum = 78893;
 
 const senderAddress = 'qKjn4fStBaAtwGiwueJf9qFxgpbAvf1xAy'; // hardcode sender address as it doesnt matter
 
@@ -77,6 +77,9 @@ async function sync(db) {
   let currentBlockChainHeight = await qclient.getBlockCount();
   currentBlockChainHeight -= 1;
 
+  const currentBlockHash = await qclient.getBlockHash(currentBlockChainHeight);
+  const currentBlockTime = (await qclient.getBlock(currentBlockHash)).time;
+
   let startBlock = contractDeployedBlockNum;
   const blocks = await db.Blocks.cfind({}).sort({ blockNum: -1 }).limit(1).exec();
   if (blocks.length > 0) {
@@ -92,7 +95,7 @@ async function sync(db) {
 
       await Promise.all([
         syncCentralizedOracleCreated(db, startBlock, endBlock, removeHexPrefix),
-        syncDecentralizedOracleCreated(db, startBlock, endBlock, removeHexPrefix),
+        syncDecentralizedOracleCreated(db, startBlock, endBlock, removeHexPrefix, currentBlockTime),
         syncOracleResultVoted(db, startBlock, endBlock, removeHexPrefix, oraclesNeedBalanceUpdate),
       ]);
       console.log('Synced Oracles\n');
@@ -148,9 +151,9 @@ async function sync(db) {
           loop.next();
         }
       }, async () => {
-        await updateOraclesPassedEndBlock(currentBlockChainHeight, db);
+        await updateOraclesPassedEndTime(currentBlockTime, db);
         // must ensure updateCentralizedOraclesPassedResultSetEndBlock after updateOraclesPassedEndBlock
-        await updateCentralizedOraclesPassedResultSetEndBlock(currentBlockChainHeight, db);
+        await updateCentralizedOraclesPassedResultSetEndTime(currentBlockTime, db);
 
         // nedb doesnt require close db, leave the comment as a reminder
         // await db.Connection.close();
@@ -255,7 +258,7 @@ async function syncCentralizedOracleCreated(db, startBlock, endBlock, removeHexP
   await Promise.all(createCentralizedOraclePromises);
 }
 
-async function syncDecentralizedOracleCreated(db, startBlock, endBlock, removeHexPrefix) {
+async function syncDecentralizedOracleCreated(db, startBlock, endBlock, removeHexPrefix, currentBlockTime) {
   let result;
   try {
     result = await qclient.searchLogs(
@@ -283,6 +286,8 @@ async function syncDecentralizedOracleCreated(db, startBlock, endBlock, removeHe
 
             decentralOracle.name = topic.name;
             decentralOracle.options = topic.options;
+            decentralOracle.startTime = currentBlockTime;
+
             await db.Oracles.insert(decentralOracle);
             resolve();
           } catch (err) {
@@ -433,30 +438,30 @@ async function syncFinalResultSet(db, startBlock, endBlock, removeHexPrefix, top
   await Promise.all(updateFinalResultSetPromises);
 }
 
-async function updateOraclesPassedEndBlock(currentBlockChainHeight, db) {
-  // all central & decentral oracles with VOTING status and endBlock less than currentBlockChainHeight
+// all central & decentral oracles with VOTING status and endTime less than currentBlockTime
+async function updateOraclesPassedEndTime(currentBlockTime, db) {
   try {
     await db.Oracles.update(
-      { endBlock: { $lt: currentBlockChainHeight }, status: 'VOTING' },
+      { endTime: { $lt: currentBlockTime }, status: 'VOTING' },
       { $set: { status: 'WAITRESULT' } },
       { multi: true },
     );
-    console.log('Updated Oracles Passed EndBlock');
+    console.log('Updated Oracles passed endTime');
   } catch (err) {
-    console.error(`ERROR: updateOraclesPassedEndBlock ${err.message}`);
+    console.error(`ERROR: updateOraclesPassedEndTime ${err.message}`);
   }
 }
 
-async function updateCentralizedOraclesPassedResultSetEndBlock(currentBlockChainHeight, db) {
-  // central oracels with WAITRESULT status and resultSetEndBlock less than  currentBlockChainHeight
+// central oracles with WAITRESULT status and resultSetEndTime less than currentBlockTime
+async function updateCentralizedOraclesPassedResultSetEndTime(currentBlockTime, db) {
   try {
     await db.Oracles.update(
-      { resultSetEndBlock: { $lt: currentBlockChainHeight }, token: 'QTUM', status: 'WAITRESULT' },
+      { resultSetEndTime: { $lt: currentBlockTime }, token: 'QTUM', status: 'WAITRESULT' },
       { $set: { status: 'OPENRESULTSET' } }, { multi: true },
     );
-    console.log('Updated COracles Passed ResultSetEndBlock');
+    console.log('Updated COracles passed resultSetEndTime');
   } catch (err) {
-    console.error(`ERROR: updateCentralizedOraclesPassedResultSetEndBlock ${err.message}`);
+    console.error(`ERROR: updateCentralizedOraclesPassedResultSetEndTime ${err.message}`);
   }
 }
 

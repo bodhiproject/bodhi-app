@@ -17,10 +17,10 @@ const EventFactory = {
       oracleAddress, // address
       eventName, // string
       resultNames, // string array
-      bettingStartBlock, // number
-      bettingEndBlock, // number
-      resultSettingStartBlock, // number
-      resultSettingEndBlock, // number
+      bettingStartTime, // string: unix time
+      bettingEndTime, // string: unix time
+      resultSettingStartTime, // string: unix time
+      resultSettingEndTime, // string: unix time
       senderAddress, // address
     } = args;
 
@@ -33,25 +33,25 @@ const EventFactory = {
     if (_.isUndefined(resultNames)) {
       throw new TypeError('resultNames needs to be defined');
     }
-    if (_.isUndefined(bettingStartBlock)) {
-      throw new TypeError('bettingStartBlock needs to be defined');
+    if (_.isUndefined(bettingStartTime)) {
+      throw new TypeError('bettingStartTime needs to be defined');
     }
-    if (_.isUndefined(bettingEndBlock)) {
-      throw new TypeError('bettingEndBlock needs to be defined');
+    if (_.isUndefined(bettingEndTime)) {
+      throw new TypeError('bettingEndTime needs to be defined');
     }
-    if (_.isUndefined(resultSettingStartBlock)) {
-      throw new TypeError('resultSettingStartBlock needs to be defined');
+    if (_.isUndefined(resultSettingStartTime)) {
+      throw new TypeError('resultSettingStartTime needs to be defined');
     }
-    if (_.isUndefined(resultSettingEndBlock)) {
-      throw new TypeError('resultSettingEndBlock needs to be defined');
+    if (_.isUndefined(resultSettingEndTime)) {
+      throw new TypeError('resultSettingEndTime needs to be defined');
     }
     if (_.isUndefined(senderAddress)) {
       throw new TypeError('senderAddress needs to be defined');
     }
 
     return contract.send('createTopic', {
-      methodArgs: [oracleAddress, eventName, resultNames, bettingStartBlock, bettingEndBlock, resultSettingStartBlock,
-        resultSettingEndBlock],
+      methodArgs: [oracleAddress, eventName, resultNames, bettingStartTime, bettingEndTime, resultSettingStartTime,
+        resultSettingEndTime],
       gasLimit: GAS_LIMIT_CREATE_TOPIC,
       senderAddress,
     });
