@@ -68,7 +68,7 @@ function startQtumProcess(reindex) {
 
       // Restart qtumd with reindex flag
       setTimeout(() => {
-        logger.debug('Reindexing Qtum blockchain');
+        logger.info('Reindexing Qtum blockchain');
         startQtumProcess(true);
       }, 1000);
     } else {
