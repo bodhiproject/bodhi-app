@@ -1,12 +1,11 @@
-import 'babel-polyfill';
-import Chai from 'chai';
-import ChaiAsPromised from 'chai-as-promised';
-import Web3Utils from 'web3-utils';
+const Web3Utils = require('web3-utils');
+const Chai = require('chai');
+const ChaiAsPromised = require('chai-as-promised');
 
-import TopicEvent from '../../api/topic_event';
-import ContractUtils from './util/contract_utils';
-import TestConfig from './config/test_config';
-import Mocks from './mock/topic_event';
+const TopicEvent = require('../../api/topic_event');
+const ContractUtils = require('./util/contract_utils');
+const TestConfig = require('./config/test_config');
+const Mocks = require('./mock/bodhi_token');
 
 Chai.use(ChaiAsPromised);
 const assert = Chai.assert;

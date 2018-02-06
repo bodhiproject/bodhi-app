@@ -1,9 +1,8 @@
-import 'babel-polyfill';
-import Chai from 'chai';
-import ChaiAsPromised from 'chai-as-promised';
+const Chai = require('chai');
+const ChaiAsPromised = require('chai-as-promised');
 
-import ContractUtils from './util/contract_utils';
-import Mocks from './mock/event_factory';
+const ContractUtils = require('./util/contract_utils');
+const Mocks = require('./mock/centralized_oracle');
 
 Chai.use(ChaiAsPromised);
 const assert = Chai.assert;

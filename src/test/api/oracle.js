@@ -1,12 +1,11 @@
-import _ from 'lodash';
-import 'babel-polyfill';
-import Chai from 'chai';
-import ChaiAsPromised from 'chai-as-promised';
-import Web3Utils from 'web3-utils';
+const _ = require('lodash');
+const Web3Utils = require('web3-utils');
+const Chai = require('chai');
+const ChaiAsPromised = require('chai-as-promised');
 
-import Oracle from '../../api/oracle';
-import TestConfig from './config/test_config';
-import Mocks from './mock/oracle';
+const Oracle = require('../../api/oracle');
+const TestConfig = require('./config/test_config');
+const Mocks = require('./mock/base_contract');
 
 Chai.use(ChaiAsPromised);
 const assert = Chai.assert;

@@ -1,13 +1,12 @@
-import 'babel-polyfill';
-import Chai from 'chai';
-import ChaiAsPromised from 'chai-as-promised';
-import Web3Utils from 'web3-utils';
-import { Decoder } from 'qweb3';
+const Web3Utils = require('web3-utils');
+const Chai = require('chai');
+const ChaiAsPromised = require('chai-as-promised');
+const Decoder = require('qweb3');
 
-import CentralizedOracle from '../../api/centralized_oracle';
-import ContractUtils from './util/contract_utils';
-import TestConfig from './config/test_config';
-import Mocks from './mock/centralized_oracle';
+const CentralizedOracle = require('../../api/centralized_oracle');
+const ContractUtils = require('./util/contract_utils');
+const TestConfig = require('./config/test_config');
+const Mocks = require('./mock/centralized_oracle');
 
 Chai.use(ChaiAsPromised);
 const assert = Chai.assert;

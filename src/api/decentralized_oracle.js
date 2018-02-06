@@ -1,8 +1,8 @@
-import _ from 'lodash';
-import { Contract } from 'qweb3';
+const _ = require('lodash');
+const { Contract } = require('qweb3');
 
-import Config from '../config/config';
-import ContractMetadata from '../config/contract_metadata';
+const Config = require('../config/config');
+const ContractMetadata = require('../config/contract_metadata');
 
 const GAS_LIMIT_VOTE = 1500000;
 

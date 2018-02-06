@@ -1,8 +1,7 @@
 /* eslint no-underscore-dangle: [2, { "allow": ["_eventName"] }] */
 
 const _ = require('lodash');
-const Qweb3 = require('qweb3').default;
-const Contract = require('qweb3').Contract;
+const { Qweb3, Contract } = require('qweb3');
 
 const config = require('../config/config');
 const connectDB = require('../db/nedb');

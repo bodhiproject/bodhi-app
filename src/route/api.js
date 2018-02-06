@@ -1,17 +1,16 @@
-import { Router } from 'restify-router';
+const { Router } = require('restify-router');
+const { Qweb3 } = require('qweb3');
 
-import Qweb3 from 'qweb3';
-
-import Config from '../config/config';
-import Blockchain from '../api/blockchain';
-import Wallet from '../api/wallet';
-import BodhiToken from '../api/bodhi_token';
-import BaseContract from '../api/base_contract';
-import EventFactory from '../api/event_factory';
-import TopicEvent from '../api/topic_event';
-import Oracle from '../api/oracle';
-import CentralizedOracle from '../api/centralized_oracle';
-import DecentralizedOracle from '../api/decentralized_oracle';
+const Config = require('../config/config');
+const Blockchain = require('../api/blockchain');
+const Wallet = require('../api/wallet');
+const BodhiToken = require('../api/bodhi_token');
+const BaseContract = require('../api/base_contract');
+const EventFactory = require('../api/event_factory');
+const TopicEvent = require('../api/topic_event');
+const Oracle = require('../api/oracle');
+const CentralizedOracle = require('../api/centralized_oracle');
+const DecentralizedOracle = require('../api/decentralized_oracle');
 
 const qweb3 = new Qweb3(Config.QTUM_RPC_ADDRESS);
 

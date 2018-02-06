@@ -1,8 +1,7 @@
-import 'babel-polyfill';
-import Chai from 'chai';
-import ChaiAsPromised from 'chai-as-promised';
+const Chai = require('chai');
+const ChaiAsPromised = require('chai-as-promised');
 
-import Wallet from '../../api/wallet';
+const Wallet = require('../../api/wallet');
 
 Chai.use(ChaiAsPromised);
 const assert = Chai.assert;
