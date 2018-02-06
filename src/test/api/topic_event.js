@@ -5,7 +5,7 @@ const ChaiAsPromised = require('chai-as-promised');
 const TopicEvent = require('../../api/topic_event');
 const ContractUtils = require('./util/contract_utils');
 const TestConfig = require('./config/test_config');
-const Mocks = require('./mock/bodhi_token');
+const Mocks = require('./mock/topic_event');
 
 Chai.use(ChaiAsPromised);
 const assert = Chai.assert;
