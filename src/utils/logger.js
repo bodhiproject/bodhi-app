@@ -7,7 +7,7 @@ const winston = require('winston');
 const log_config = require('../config/config');
 
 // Create log dir if needed
-const logDir = `${path.dirname(require.main.filename)}/logs`;
+const logDir = `${process.cwd()}/logs`;
 console.log();
 if (!fs.existsSync(logDir)){
     fs.mkdirSync(logDir);
