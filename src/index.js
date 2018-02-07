@@ -44,8 +44,16 @@ server.on('after', (req, res, route, err) => {
 let qtumProcess;
 
 function startQtumProcess(reindex) {
+  let basePath = 
+  if (process.argv[2]) {
+    basePath = (_.slice(process.argv[2], '=', 2))[1];
+  } else {
+    basePath = process.env[];
+  }
+  console.log(basePath);
+
   // avoid using path.join for pkg to pack qtumd
-  const qtumdPath = `${path.dirname(__dirname)}/qtumd`;
+  const qtumdPath = `${path.dirname(basePath)}/qtumd`;
   const flags = ['-testnet', '-logevents', '-rpcuser=bodhi', '-rpcpassword=bodhi'];
   if (reindex) {
     flags.push('-reindex');

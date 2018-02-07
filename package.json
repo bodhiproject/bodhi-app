@@ -4,7 +4,7 @@
   "description": "An open source blockchain explorer for monitoring Bodhi platform",
   "main": "index.js",
   "scripts": {
-    "start": "node src/index.js",
+    "start": "node src/index.js --qtumpath=./qtum/mac/bin",
     "start:debug": "node --inspect src/index.js",
     "test": "mocha --recursive src/test/.",
     "lint:fix": "eslint --fix -- src/.",
