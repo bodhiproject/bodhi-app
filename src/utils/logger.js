@@ -30,10 +30,7 @@ const logger = new (winston.Logger)({
         return moment().format('YYYY-MM-DD HH:mm:ss');
       },
       formatter(options) {
-        return `${options.timestamp()} 
-          ${config.colorize(options.level, options.level.toUpperCase())} 
-          ${(options.message ? options.message : '')} 
-          ${(options.meta && Object.keys(options.meta).length ? `\n\t${JSON.stringify(options.meta)}` : '')}`;
+        return `${options.timestamp()} ${config.colorize(options.level, options.level.toUpperCase())} ${(options.message ? options.message : '')} ${(options.meta && Object.keys(options.meta).length ? `\n\t${JSON.stringify(options.meta)}` : '')}`;
       },
     }),
     new (winston.transports.File)({
@@ -42,10 +39,7 @@ const logger = new (winston.Logger)({
         return moment().format('YYYY-MM-DD HH:mm:ss');
       },
       formatter(options) {
-        return `${options.timestamp()} 
-          ${config.colorize(options.level, options.level.toUpperCase())} 
-          ${(options.message ? options.message : '')} 
-          ${(options.meta && Object.keys(options.meta).length ? `\n\t${JSON.stringify(options.meta)}` : '')}`;
+        return `${options.timestamp()} ${config.colorize(options.level, options.level.toUpperCase())} ${(options.message ? options.message : '')} ${(options.meta && Object.keys(options.meta).length ? `\n\t${JSON.stringify(options.meta)}` : '')}`;
       },
       json: false,
     }),
