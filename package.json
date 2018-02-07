@@ -21,7 +21,7 @@
   "license": "ISC",
   "bin": "src/index.js",
   "pkg": {
-    "assets": "ui/, src/logs/"
+    "assets": "ui/"
   },
   "dependencies": {
     "apollo-server-restify": "^1.3.2",
