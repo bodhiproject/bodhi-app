@@ -70,9 +70,9 @@ function startQtumProcess(reindex) {
 
       // Restart qtumd with reindex flag
       setTimeout(() => {
-        logger.info('Reindexing Qtum blockchain');
+        console.log('Restarting and reindexing Qtum blockchain');
         startQtumProcess(true);
-      }, 1000);
+      }, 3000);
     } else {
       // add delay to give some time to write to log file
       setTimeout(() => {
@@ -147,4 +147,4 @@ setTimeout(() => {
   startSync();
   startAPI();
   openBrowser();
-}, 4000);
+}, 5000);
