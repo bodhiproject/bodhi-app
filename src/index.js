@@ -34,8 +34,6 @@ server.on('after', (req, res, route, err) => {
   }
 });
 
-let qtumProcess;
-
 function startQtumProcess(reindex) {
   let basePath;
   if (process.argv[2]) {
@@ -53,7 +51,7 @@ function startQtumProcess(reindex) {
     flags.push('-reindex');
   }
 
-  qtumProcess = spawn(qtumdPath, flags);
+  const qtumProcess = spawn(qtumdPath, flags);
   logger.debug(`qtumd started on PID ${qtumProcess.pid}`);
 
   qtumProcess.stdout.on('data', (data) => {
@@ -66,7 +64,6 @@ function startQtumProcess(reindex) {
     if (data.includes('You need to rebuild the database using -reindex-chainstate to enable -logevents.')) {
       // Clean old process first
       qtumProcess.kill();
-      qtumProcess = null;
 
       // Restart qtumd with reindex flag
       setTimeout(() => {
@@ -131,7 +128,6 @@ function exit(signal) {
 
   // add delay to give some time to write to log file
   setTimeout(() => {
-    qtumProcess.kill();
     process.exit();
   }, 500);
 }
