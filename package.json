@@ -8,8 +8,8 @@
     "start:debug": "node --inspect src/index.js",
     "test": "mocha --recursive src/test/.",
     "lint:fix": "eslint --fix -- src/.",
-    "pkg:mac": " cp qtum/mac/bin/qtumd bin/mac/qtumd ; pkg . -t node9-mac -o bin/mac/bodhi-app-mac",
-    "pkg:win64": " cp qtum/win64/bin/qtumd.exe bin/win64/qtumd.exe ; pkg . -t node9-win -o bin/win64/bodhi-app-win64.exe"
+    "pkg:mac": "mkdir -p bin/mac/qtum; cp qtum/mac/bin/qtumd bin/mac/qtum/qtumd; pkg . -t node9-mac -o bin/mac/bodhi-app-mac",
+    "pkg:win64": "mkdir -p bin/win64/qtum; cp qtum/win64/bin/qtumd.exe bin/win64/qtum/qtumd.exe; pkg . -t node9-win -o bin/win64/bodhi-app-win64.exe"
   },
   "keywords": [
     "qtum",
@@ -21,7 +21,7 @@
   "license": "ISC",
   "bin": "src/index.js",
   "pkg": {
-    "assets": "ui/"
+    "assets": "ui/, src/logs/"
   },
   "dependencies": {
     "apollo-server-restify": "^1.3.2",

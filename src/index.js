@@ -39,16 +39,15 @@ let qtumProcess;
 function startQtumProcess(reindex) {
   let basePath;
   if (process.argv[2]) {
-    console.log('using flag');
     basePath = (_.split(process.argv[2], '=', 2))[1];
   } else {
-    console.log('using default');
-    basePath = path.dirname(process.argv[0]);
+    basePath = `${path.dirname(process.argv[0])}/qtum`;
   }
-  console.log(basePath);
 
   // avoid using path.join for pkg to pack qtumd
   const qtumdPath = `${basePath}/qtumd`;
+  logger.debug(`qtumd dir: ${qtumdPath}`);
+
   const flags = ['-testnet', '-logevents', '-rpcuser=bodhi', '-rpcpassword=bodhi'];
   if (reindex) {
     flags.push('-reindex');

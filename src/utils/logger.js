@@ -7,14 +7,14 @@ const winston = require('winston');
 const log_config = require('../config/config');
 
 // Create log dir if needed
-const logDir = `${process.cwd()}/logs`;
-console.log();
+const logDir = `${path.dirname(process.execPath)}/logs`;
+console.log('logDir', logDir);
 if (!fs.existsSync(logDir)){
     fs.mkdirSync(logDir);
 }
 
-var config = winston.config;
-var logger = new (winston.Logger)({
+const config = winston.config;
+const logger = new (winston.Logger)({
   transports: [
     new (winston.transports.Console)({
       timestamp: function() {
@@ -25,7 +25,7 @@ var logger = new (winston.Logger)({
       }
     }),
     new (winston.transports.File)({
-      filename: `${logDir}/${moment().format("YYYY-MM-DD")}.log`,
+      filename: `${logDir}/bodhiapp_${moment().format("YYYYMMDD_HHmmss")}.log`,
       timestamp: function() {
         return moment().format("YYYY-MM-DD HH:mm:ss")
       }, 
@@ -37,6 +37,7 @@ var logger = new (winston.Logger)({
   ],
   exitOnError: false
 });
+
 const loglvl = process.env.loglvl || log_config.DEFAULT_LOGLVL;
 logger.level = loglvl;
 
