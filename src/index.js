@@ -1,5 +1,4 @@
 const _ = require('lodash');
-const fs = require('fs');
 const path = require('path');
 const restify = require('restify');
 const corsMiddleware = require('restify-cors-middleware');
@@ -10,18 +9,11 @@ const opn = require('opn');
 
 const logger = require('./utils/logger');
 const schema = require('./schema');
-const config = require('./config/config');
 const syncRouter = require('./route/sync');
 const apiRouter = require('./route/api');
 const startSync = require('./sync');
 
 const PORT = 5555;
-
-// Create log dir if needed
-const dir = config.LOG_PATH;
-if (!fs.existsSync(dir)){
-    fs.mkdirSync(dir);
-}
 
 // Restify setup
 const server = restify.createServer({
