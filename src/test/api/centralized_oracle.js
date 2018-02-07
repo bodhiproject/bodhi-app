@@ -1,7 +1,7 @@
 const Web3Utils = require('web3-utils');
 const Chai = require('chai');
 const ChaiAsPromised = require('chai-as-promised');
-const Decoder = require('qweb3');
+const { Decoder } = require('qweb3');
 
 const CentralizedOracle = require('../../api/centralized_oracle');
 const ContractUtils = require('./util/contract_utils');

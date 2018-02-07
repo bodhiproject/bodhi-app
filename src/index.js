@@ -1,6 +1,4 @@
-const logger = require('./utils/logger');
-const fs = require('fs');
-
+const _ = require('lodash');
 const path = require('path');
 const restify = require('restify');
 const corsMiddleware = require('restify-cors-middleware');
@@ -9,30 +7,21 @@ const { execute, subscribe } = require('graphql');
 const { SubscriptionServer } = require('subscriptions-transport-ws');
 const opn = require('opn');
 
+const logger = require('./utils/logger');
 const schema = require('./schema');
-const config = require('./config/config');
-
 const syncRouter = require('./route/sync');
 const apiRouter = require('./route/api');
-
 const startSync = require('./sync');
 
 const PORT = 5555;
 
+// Restify setup
 const server = restify.createServer({
   title: 'Bodhi Synchroniser',
 });
-
 const cors = corsMiddleware({
   origins: ['*'],
 });
-
-const dir = config.LOG_PATH;
-
-if (!fs.existsSync(dir)){
-    fs.mkdirSync(dir);
-}
-
 server.pre(cors.preflight);
 server.use(cors.actual);
 server.use(restify.plugins.bodyParser({ mapParams: true }));
@@ -45,7 +34,56 @@ server.on('after', (req, res, route, err) => {
   }
 });
 
-const startAPI = async () => {
+function startQtumProcess(reindex) {
+  let basePath;
+  if (process.argv[2]) {
+    basePath = (_.split(process.argv[2], '=', 2))[1];
+  } else {
+    basePath = `${path.dirname(process.argv[0])}/qtum`;
+  }
+
+  // avoid using path.join for pkg to pack qtumd
+  const qtumdPath = `${basePath}/qtumd`;
+  logger.debug(`qtumd dir: ${qtumdPath}`);
+
+  const flags = ['-testnet', '-logevents', '-rpcuser=bodhi', '-rpcpassword=bodhi'];
+  if (reindex) {
+    flags.push('-reindex');
+  }
+
+  const qtumProcess = spawn(qtumdPath, flags);
+  logger.debug(`qtumd started on PID ${qtumProcess.pid}`);
+
+  qtumProcess.stdout.on('data', (data) => {
+    logger.debug(`qtumd output: ${data}`);
+  });
+
+  qtumProcess.stderr.on('data', (data) => {
+    logger.error(`qtumd failed with error: ${data}`);
+
+    if (data.includes('You need to rebuild the database using -reindex-chainstate to enable -logevents.')) {
+      // Clean old process first
+      qtumProcess.kill();
+
+      // Restart qtumd with reindex flag
+      setTimeout(() => {
+        console.log('Restarting and reindexing Qtum blockchain');
+        startQtumProcess(true);
+      }, 3000);
+    } else {
+      // add delay to give some time to write to log file
+      setTimeout(() => {
+        process.exit();
+      }, 500);
+    }
+  });
+
+  qtumProcess.on('close', (code) => {
+    logger.debug(`qtumd exited with code ${code}`);
+  });
+}
+
+async function startAPI() {
   syncRouter.applyRoutes(server);
   apiRouter.applyRoutes(server);
 
@@ -61,9 +99,9 @@ const startAPI = async () => {
     );
     logger.info(`Bodhi App is running on http://localhost:${PORT}.`);
   });
-};
+}
 
-const openBrowser = async () => {
+async function openBrowser() {
   try {
     const platform = process.platform;
     if (platform.includes('darwin')) {
@@ -79,51 +117,30 @@ const openBrowser = async () => {
         app: ['google-chrome', '--incognito'],
       });
     }
-  } catch(err) {
+  } catch (err) {
     logger.debug('Chrome not found. Launching default browser.');
     await opn(`http://localhost:${PORT}`);
   }
-};
-
-// avoid using path.join for pkg to pack qtumd
-const qtumdPath = `${path.dirname(__dirname)}/qtumd`;
-const qtumprocess = spawn(qtumdPath, ['-testnet', '-logevents', '-rpcuser=bodhi', '-rpcpassword=bodhi'], {});
-
-qtumprocess.stdout.on('data', (data) => {
-  logger.debug(`stdout: ${data}`);
-});
-
-// add delay to give some time to write to log file
-qtumprocess.stderr.on('data', (data) => {
-  logger.error(`qtum node cant start with error: ${data}`);
-  setTimeout(() => {
-    process.exit()
-  }, 500);
-});
-
-// add delay to give some time to write to log file
-qtumprocess.on('close', (code) => {
-  logger.debug(`qtum node exited with code ${code}`);
-  setTimeout(() => {
-    process.exit()
-  }, 500);
-});
+}
 
 function exit(signal) {
-  logger.debug(`Received ${signal}, exiting`);
-  qtumprocess.kill();
-  process.exit();
+  logger.info(`Received ${signal}, exiting`);
+
+  // add delay to give some time to write to log file
+  setTimeout(() => {
+    process.exit();
+  }, 500);
 }
 
 process.on('SIGINT', exit);
 process.on('SIGTERM', exit);
 process.on('SIGHUP', exit);
 
-// 3s is sufficient for qtumd to start
+startQtumProcess(false);
+
+// Wait 4s for qtumd to start and reindex if necessary
 setTimeout(() => {
   startSync();
   startAPI();
   openBrowser();
-}, 3000);
-
-
+}, 5000);

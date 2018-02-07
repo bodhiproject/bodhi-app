@@ -5,7 +5,7 @@ const ChaiAsPromised = require('chai-as-promised');
 
 const Oracle = require('../../api/oracle');
 const TestConfig = require('./config/test_config');
-const Mocks = require('./mock/base_contract');
+const Mocks = require('./mock/oracle');
 
 Chai.use(ChaiAsPromised);
 const assert = Chai.assert;

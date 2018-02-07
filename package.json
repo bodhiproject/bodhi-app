@@ -4,12 +4,12 @@
   "description": "An open source blockchain explorer for monitoring Bodhi platform",
   "main": "index.js",
   "scripts": {
-    "start": "node src/index.js",
+    "start": "node src/index.js --qtumpath=./qtum/mac/bin --dev",
     "start:debug": "node --inspect src/index.js",
     "test": "mocha --recursive src/test/.",
     "lint:fix": "eslint --fix -- src/.",
-    "pkg:mac": " cp qtum/mac/bin/qtumd bin/mac/qtumd ; pkg . -t node9-mac -o bin/mac/bodhi-app-mac",
-    "pkg:win64": " cp qtum/win64/bin/qtumd.exe bin/win64/qtumd.exe ; pkg . -t node9-win -o bin/win64/bodhi-app-win64.exe"
+    "pkg:mac": "mkdir -p bin/mac/qtum; cp qtum/mac/bin/qtumd bin/mac/qtum/qtumd; pkg . -t node9-mac -o bin/mac/bodhi-app-mac",
+    "pkg:win64": "mkdir -p bin/win64/qtum; cp qtum/win64/bin/qtumd.exe bin/win64/qtum/qtumd.exe; pkg . -t node9-win -o bin/win64/bodhi-app-win64.exe"
   },
   "keywords": [
     "qtum",

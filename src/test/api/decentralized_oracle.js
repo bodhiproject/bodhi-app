@@ -5,7 +5,7 @@ const ChaiAsPromised = require('chai-as-promised');
 const DecentralizedOracle = require('../../api/decentralized_oracle');
 const ContractUtils = require('./util/contract_utils');
 const TestConfig = require('./config/test_config');
-const Mocks = require('./mock/centralized_oracle');
+const Mocks = require('./mock/decentralized_oracle');
 
 Chai.use(ChaiAsPromised);
 const assert = Chai.assert;
