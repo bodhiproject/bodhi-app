@@ -76,7 +76,7 @@ function startQtumProcess(reindex) {
     } else {
       // add delay to give some time to write to log file
       setTimeout(() => {
-        process.exit()
+        process.exit();
       }, 500);
     }
   });
@@ -102,7 +102,7 @@ async function startAPI() {
     );
     logger.info(`Bodhi App is running on http://localhost:${PORT}.`);
   });
-};
+}
 
 async function openBrowser() {
   try {
@@ -120,11 +120,11 @@ async function openBrowser() {
         app: ['google-chrome', '--incognito'],
       });
     }
-  } catch(err) {
+  } catch (err) {
     logger.debug('Chrome not found. Launching default browser.');
     await opn(`http://localhost:${PORT}`);
   }
-};
+}
 
 function exit(signal) {
   logger.info(`Received ${signal}, exiting`);

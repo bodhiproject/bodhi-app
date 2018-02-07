@@ -18,7 +18,7 @@ if (_.indexOf(process.argv, '--dev') === -1) {
 
 // Create log dir if needed
 console.log(`Logs output: ${logDir}`);
-if (!fs.existsSync(logDir)){
+if (!fs.existsSync(logDir)) {
   fs.mkdirSync(logDir);
 }
 
@@ -26,31 +26,31 @@ const config = winston.config;
 const logger = new (winston.Logger)({
   transports: [
     new (winston.transports.Console)({
-      timestamp: function() {
-        return moment().format("YYYY-MM-DD HH:mm:ss")
+      timestamp() {
+        return moment().format('YYYY-MM-DD HH:mm:ss');
       },
-      formatter: function(options) {
+      formatter(options) {
         return `${options.timestamp()} 
           ${config.colorize(options.level, options.level.toUpperCase())} 
           ${(options.message ? options.message : '')} 
-          ${(options.meta && Object.keys(options.meta).length ? '\n\t'+ JSON.stringify(options.meta) : '' )}`;
-      }
+          ${(options.meta && Object.keys(options.meta).length ? `\n\t${JSON.stringify(options.meta)}` : '')}`;
+      },
     }),
     new (winston.transports.File)({
-      filename: `${logDir}/bodhiapp_${moment().format("YYYYMMDD_HHmmss")}.log`,
-      timestamp: function() {
-        return moment().format("YYYY-MM-DD HH:mm:ss")
-      }, 
-      formatter: function(options) {
+      filename: `${logDir}/bodhiapp_${moment().format('YYYYMMDD_HHmmss')}.log`,
+      timestamp() {
+        return moment().format('YYYY-MM-DD HH:mm:ss');
+      },
+      formatter(options) {
         return `${options.timestamp()} 
           ${config.colorize(options.level, options.level.toUpperCase())} 
           ${(options.message ? options.message : '')} 
-          ${(options.meta && Object.keys(options.meta).length ? '\n\t'+ JSON.stringify(options.meta) : '' )}`;
+          ${(options.meta && Object.keys(options.meta).length ? `\n\t${JSON.stringify(options.meta)}` : '')}`;
       },
       json: false,
-    })
+    }),
   ],
-  exitOnError: false
+  exitOnError: false,
 });
 
 const loglvl = process.env.loglvl || log_config.DEFAULT_LOGLVL;
