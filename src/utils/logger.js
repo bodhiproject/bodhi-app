@@ -1,4 +1,5 @@
 require('dotenv').config();
+const _ = require('lodash');
 const fs = require('fs');
 const path = require('path');
 const moment = require('moment');
@@ -6,11 +7,19 @@ const winston = require('winston');
 
 const log_config = require('../config/config');
 
+let logDir;
+if (_.indexOf(process.argv, '--dev') === -1) {
+  // run without --dev flag, build version
+  logDir = `${path.dirname(process.execPath)}/logs`;
+} else {
+  // run with --dev flag, dev version
+  logDir = `${path.dirname(__dirname)}/logs`;
+}
+
 // Create log dir if needed
-const logDir = `${path.dirname(process.execPath)}/logs`;
-console.log('logDir', logDir);
+console.log(`Logs output: ${logDir}`);
 if (!fs.existsSync(logDir)){
-    fs.mkdirSync(logDir);
+  fs.mkdirSync(logDir);
 }
 
 const config = winston.config;
@@ -21,7 +30,10 @@ const logger = new (winston.Logger)({
         return moment().format("YYYY-MM-DD HH:mm:ss")
       },
       formatter: function(options) {
-        return `${options.timestamp()} ${__filename} ${config.colorize(options.level, options.level.toUpperCase())} ${(options.message ? options.message : '')} ${(options.meta && Object.keys(options.meta).length ? '\n\t'+ JSON.stringify(options.meta) : '' )}`;
+        return `${options.timestamp()} 
+          ${config.colorize(options.level, options.level.toUpperCase())} 
+          ${(options.message ? options.message : '')} 
+          ${(options.meta && Object.keys(options.meta).length ? '\n\t'+ JSON.stringify(options.meta) : '' )}`;
       }
     }),
     new (winston.transports.File)({
@@ -30,7 +42,10 @@ const logger = new (winston.Logger)({
         return moment().format("YYYY-MM-DD HH:mm:ss")
       }, 
       formatter: function(options) {
-        return `${options.timestamp()} ${__filename} ${config.colorize(options.level, options.level.toUpperCase())} ${(options.message ? options.message : '')} ${(options.meta && Object.keys(options.meta).length ? '\n\t'+ JSON.stringify(options.meta) : '' )}`;
+        return `${options.timestamp()} 
+          ${config.colorize(options.level, options.level.toUpperCase())} 
+          ${(options.message ? options.message : '')} 
+          ${(options.meta && Object.keys(options.meta).length ? '\n\t'+ JSON.stringify(options.meta) : '' )}`;
       },
       json: false,
     })
