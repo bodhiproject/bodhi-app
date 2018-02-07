@@ -1,4 +1,4 @@
-const logger = require('./utils/logger');
+const _ = require('lodash');
 const fs = require('fs');
 const path = require('path');
 const restify = require('restify');
@@ -8,6 +8,7 @@ const { execute, subscribe } = require('graphql');
 const { SubscriptionServer } = require('subscriptions-transport-ws');
 const opn = require('opn');
 
+const logger = require('./utils/logger');
 const schema = require('./schema');
 const config = require('./config/config');
 const syncRouter = require('./route/sync');
@@ -44,16 +45,18 @@ server.on('after', (req, res, route, err) => {
 let qtumProcess;
 
 function startQtumProcess(reindex) {
-  let basePath = 
+  let basePath;
   if (process.argv[2]) {
-    basePath = (_.slice(process.argv[2], '=', 2))[1];
+    console.log('using flag');
+    basePath = (_.split(process.argv[2], '=', 2))[1];
   } else {
-    basePath = process.env[];
+    console.log('using default');
+    basePath = path.dirname(process.argv[0]);
   }
   console.log(basePath);
 
   // avoid using path.join for pkg to pack qtumd
-  const qtumdPath = `${path.dirname(basePath)}/qtumd`;
+  const qtumdPath = `${basePath}/qtumd`;
   const flags = ['-testnet', '-logevents', '-rpcuser=bodhi', '-rpcpassword=bodhi'];
   if (reindex) {
     flags.push('-reindex');
