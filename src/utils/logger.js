@@ -7,10 +7,10 @@ const winston = require('winston');
 const log_config = require('../config/config');
 
 // Create log dir if needed
-const dir = `${__dirname}/../logs`;
-console.log(dir);
-if (!fs.existsSync(dir)){
-    fs.mkdirSync(dir);
+const logDir = `${path.dirname(require.main.filename)}/logs`;
+console.log();
+if (!fs.existsSync(logDir)){
+    fs.mkdirSync(logDir);
 }
 
 var config = winston.config;
@@ -25,7 +25,7 @@ var logger = new (winston.Logger)({
       }
     }),
     new (winston.transports.File)({
-      filename: `${__dirname}/../logs/${moment().format("YYYY-MM-DD")}.log`,
+      filename: `${logDir}/${moment().format("YYYY-MM-DD")}.log`,
       timestamp: function() {
         return moment().format("YYYY-MM-DD HH:mm:ss")
       }, 
