@@ -8,8 +8,11 @@
     "start:debug": "node --inspect src/index.js",
     "test": "mocha --recursive src/test/.",
     "lint:fix": "eslint --fix -- src/.",
-    "pkg:mac": "mkdir -p bin/mac/qtum; cp qtum/mac/bin/qtumd bin/mac/qtum/qtumd; pkg . -t node9-mac -o bin/mac/bodhi-app-mac",
-    "pkg:win64": "mkdir -p bin/win64/qtum; cp qtum/win64/bin/qtumd.exe bin/win64/qtum/qtumd.exe; pkg . -t node9-win -o bin/win64/bodhi-app-win64.exe"
+    "pkg:mac": "mkdir -p bin/mac/qtum; cp qtum/mac/bin/qtumd bin/mac/qtum/qtumd; pkg . -t node9-mac -o bin/mac/bodhi-app-mac --debug",
+    "pkg:win32": "mkdir -p bin/win32/qtum; cp qtum/win32/bin/qtumd.exe bin/win32/qtum/qtumd.exe; pkg . -t node9-win-x86 -o bin/win32/bodhi-app-win32.exe --debug",
+    "pkg:win64": "mkdir -p bin/win64/qtum; cp qtum/win64/bin/qtumd.exe bin/win64/qtum/qtumd.exe; pkg . -t node9-win-x64 -o bin/win64/bodhi-app-win64.exe --debug",
+    "pkg:linux32": "mkdir -p bin/linux32/qtum; cp qtum/linux32/bin/qtumd bin/linux32/qtum/qtumd; pkg . -t node9-linux-x86 -o bin/linux32/bodhi-app-linux32 --debug",
+    "pkg:linux64": "mkdir -p bin/linux64/qtum; cp qtum/linux64/bin/qtumd bin/linux64/qtum/qtumd; pkg . -t node9-linux-x64 -o bin/linux64/bodhi-app-linux64 --debug"
   },
   "keywords": [
     "qtum",
