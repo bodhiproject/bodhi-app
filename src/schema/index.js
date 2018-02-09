@@ -53,10 +53,12 @@ type Vote {
 
 type Block {
   blockNum: Int!
+  blockTime: Int!
 }
 
 type syncInfo {
   syncBlockNum: Int
+  syncBlockTime: Int
   chainBlockNum: Int
 }
 

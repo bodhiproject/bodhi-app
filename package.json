@@ -5,7 +5,6 @@
   "main": "index.js",
   "scripts": {
     "start": "node src/index.js --qtumpath=./qtum/mac/bin --dev",
-    "start:debug": "node --inspect src/index.js",
     "test": "mocha --recursive src/test/.",
     "lint:fix": "eslint --fix -- src/.",
     "pkg:mac": "mkdir -p bin/mac/qtum; cp qtum/mac/bin/qtumd bin/mac/qtum/qtumd; pkg . -t node9-mac -o bin/mac/bodhi-app-mac --debug",

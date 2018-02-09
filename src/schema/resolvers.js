@@ -158,6 +158,7 @@ module.exports = {
 
     syncInfo: async (root, {}, { db: { Blocks } }) => {
       let syncBlockNum = null;
+      let syncBlockTime = null;
       let blocks;
       try {
         blocks = await Blocks.cfind({}).sort({ blockNum: -1 }).limit(1).exec();
@@ -167,6 +168,7 @@ module.exports = {
 
       if (blocks.length > 0) {
         syncBlockNum = blocks[0].blockNum;
+        syncBlockTime = blocks[0].blockTime;
       }
 
       let chainBlockNum = null;
@@ -178,7 +180,7 @@ module.exports = {
         console.error(`Error GET https://testnet.qtum.org/insight-api/status?q=getInfo: ${err.message}`);
       }
 
-      return { syncBlockNum, chainBlockNum };
+      return { syncBlockNum, syncBlockTime, chainBlockNum };
     },
   },
 
