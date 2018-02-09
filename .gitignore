@@ -128,7 +128,8 @@ $RECYCLE.BIN/
 # NeDB
 *.db
 
-build/
+# Binaries
+bin/
 
 # log file
 src/logs/

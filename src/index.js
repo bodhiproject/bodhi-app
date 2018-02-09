@@ -7,13 +7,12 @@ const { execute, subscribe } = require('graphql');
 const { SubscriptionServer } = require('subscriptions-transport-ws');
 const opn = require('opn');
 
+const config = require('./config/config');
 const logger = require('./utils/logger');
 const schema = require('./schema');
 const syncRouter = require('./route/sync');
 const apiRouter = require('./route/api');
 const startSync = require('./sync');
-
-const PORT = 5555;
 
 // Restify setup
 const server = restify.createServer({
@@ -90,37 +89,20 @@ async function startAPI() {
   server.get(/\/?.*/, restify.plugins.serveStatic({
     directory: path.join(__dirname, '../ui'),
     default: 'index.html',
+    maxAge: 0,
   }));
 
-  server.listen(PORT, () => {
+  server.listen(config.PORT, () => {
     SubscriptionServer.create(
       { execute, subscribe, schema },
       { server, path: '/subscriptions' },
     );
-    logger.info(`Bodhi App is running on http://localhost:${PORT}.`);
+    logger.info(`Bodhi App is running on http://${config.HOSTNAME}:${config.PORT}.`);
   });
 }
 
 async function openBrowser() {
-  try {
-    const platform = process.platform;
-    if (platform.includes('darwin')) {
-      await opn(`http://localhost:${PORT}`, {
-        app: ['google chrome', '--incognito'],
-      });
-    } else if (platform.includes('win')) {
-      await opn(`http://localhost:${PORT}`, {
-        app: ['chrome', '--incognito'],
-      });
-    } else if (platform.includes('linux')) {
-      await opn(`http://localhost:${PORT}`, {
-        app: ['google-chrome', '--incognito'],
-      });
-    }
-  } catch (err) {
-    logger.debug('Chrome not found. Launching default browser.');
-    await opn(`http://localhost:${PORT}`);
-  }
+  await opn(`http://${config.HOSTNAME}:${config.PORT}`);
 }
 
 function exit(signal) {

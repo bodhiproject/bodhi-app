@@ -3,8 +3,7 @@ const Router = require('restify-router').Router;
 
 const connectDB = require('../db/nedb');
 const schema = require('../schema');
-
-const syncPort = 5555;
+const config = require('../config/config');
 
 const syncRouter = new Router();
 
@@ -18,7 +17,7 @@ syncRouter.post('/graphql', graphqlRestify(graphQLOptions));
 
 syncRouter.get('/graphiql', graphiqlRestify({
   endpointURL: '/graphql',
-  subscriptionsEndpoint: `ws://localhost:${syncPort}/subscriptions`,
+  subscriptionsEndpoint: `ws://${config.HOSTNAME}:${config.PORT}/subscriptions`,
 }));
 
 module.exports = syncRouter;

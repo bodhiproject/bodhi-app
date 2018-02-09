@@ -1,6 +1,7 @@
 const config = {
+  HOSTNAME: '127.0.0.1',
+  PORT: 5555,
   QTUM_RPC_ADDRESS: 'http://bodhi:bodhi@localhost:13889',
-  MONGO_URL: 'mongodb://localhost:27017/bodhiapi',
   DEFAULT_LOGLVL: 'info',
 };
 
