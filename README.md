@@ -1,19 +1,16 @@
-# Bodhi application logic in GraphQL + neDB
+# Installation
 
-## Get Started
-1. `git clone https://github.com/bodhiproject/bodhi-graphql.git`
+1. Download the last binary at our releases page: https://github.com/bodhiproject/bodhi-app/releases
 
-2. `cd bodhi-graphql`
+2. Unzip the contents
 
-3. `npm install`
+# Usage
 
-4. start bodhi-graphql at 5555
+1. Run the executable file:
+    - Mac: `bodhi-app-mac`
+    - Windows: `bodhi-app-win64.exe` or `bodhi-app-win32.exe`
+    - Linux: `bodhi-app-linux64` or `bodhi-app-linux32`
 
-`npm start`
+2. It should automatically open up your default browser to http://127.0.0.1:5555, but if it doesn't, open up your web browser to that URL.
 
-play with graphiql on `localhost:5555/graphiql`
-
-## Package & Release
-1. `npm install -g pkg`
-
-2. `npm run pkg:mac` or `npm run pkg:win64`
+3. Enjoy!
