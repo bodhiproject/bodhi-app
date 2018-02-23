@@ -10,5 +10,5 @@ Download the last binary at our releases page: https://github.com/bodhiproject/b
 # Win
 
 1. Please disable your antivirus, or whitelist the Bodhi app from your antivirus program. Some antiviruses will come back as a false positive so if you don't disable it, it could automatically quarantine the app. This will make the app disappear.
-2. Run `Bodhi Setup 0.3.0.exe`
+2. Run `Bodhi Setup x.x.x.exe`
 3. Enjoy!
