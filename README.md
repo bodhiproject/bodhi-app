@@ -10,13 +10,14 @@ Download the last binary at our releases page: https://github.com/bodhiproject/b
 
 ## Windows
 
-1. Please disable your antivirus, or whitelist the Bodhi app from your antivirus program. Some antiviruses will come back as a false positive so if you don't disable it, it could automatically quarantine the app. This will make the app disappear.
-2. Run `Bodhi-x.x.x.exe`
-3. Enjoy!
+1. Please disable your antivirus or whitelist the Bodhi app before running it. Some antiviruses will come back as a false positive so if you don't disable it and it could automatically quarantine the app. This will make the app disappear.
+2. The Qtum app might also pop up as an antivirus false positive. Please disable or whitelist your antivirus program.
+3. Run `Bodhi-Setup-x.x.x.exe`
+4. Enjoy!
 
 ## Linux
 
-1. Run `Bodhi-0.3.0-i386.AppImage` or `Bodhi-0.3.0-x86_64.AppImage`
+1. Run `Bodhi-x.x.x-i386.AppImage` or `Bodhi-x.x.x-x86_64.AppImage`
 2. Enjoy!
 
 # Winning Rates Formulae
